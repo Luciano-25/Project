@@ -182,3 +182,56 @@
 .footer-section a:hover {
     color: #3498db;
 }
+
+/* Header and Navigation Styles */
+.top-header {
+    background-color: #333;
+    padding: 15px 0;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-title {
+    color: white;
+    margin: 0;
+    font-size: 24px;
+}
+
+.nav-links {
+    background-color: #444;
+    padding: 10px 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+}
+
+.nav-links a:hover {
+    background-color: #555;
+}
+
+.nav-right {
+    float: right;
+}
+
+.cart-icon {
+    position: relative;
+    color: white;
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-size: 12px;
+}

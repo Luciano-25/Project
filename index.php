@@ -22,7 +22,7 @@ $staff_picks = $conn->query($sql_staff);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookHaven - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home.css">
 </head>
 <body>
     <header class="top-header">
@@ -62,62 +62,38 @@ $staff_picks = $conn->query($sql_staff);
             </div>
         </section>
 
-        <!-- Featured Collections -->
         <section class="featured-collections">
-            <div class="container">
-                <!-- New Arrivals -->
-                <div class="collection-section">
-                    <h2>New Arrivals</h2>
-                    <div class="book-grid">
-                        <?php while($book = $new_arrivals->fetch_assoc()): ?>
-                            <div class="book-card">
-                                <a href="book_details.php?id=<?php echo $book['id']; ?>">
-                                    <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>">
-                                    <h3><?php echo $book['title']; ?></h3>
-                                    <p class="author">by <?php echo $book['author']; ?></p>
-                                    <p class="price">RM <?php echo number_format($book['price'], 2); ?></p>
-                                </a>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
+    <div class="collection-section">
+        <div class="section-header">
+            <h2>New Arrivals</h2>
+            <a href="products.php?category=new" class="view-all">View All →</a>
+        </div>
+        <button class="scroll-btn scroll-left" onclick="scroll('new-arrivals', -300)">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="book-grid" id="new-arrivals">
+            <?php while($book = $new_arrivals->fetch_assoc()): ?>
+                <div class="book-card">
+                    <a href="book_details.php?id=<?php echo $book['id']; ?>">
+                        <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>">
+                        <div class="book-info">
+                            <h3 class="book-title"><?php echo $book['title']; ?></h3>
+                            <p class="book-author">by <?php echo $book['author']; ?></p>
+                            <p class="book-price">RM <?php echo number_format($book['price'], 2); ?></p>
+                        </div>
+                    </a>
                 </div>
+            <?php endwhile; ?>
+        </div>
+        <button class="scroll-btn scroll-right" onclick="scroll('new-arrivals', 300)">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    
+    <!-- Repeat for Bestsellers and Staff Picks sections -->
+</section>
 
-                <!-- Bestsellers -->
-                <div class="collection-section">
-                    <h2>Bestsellers</h2>
-                    <div class="book-grid">
-                        <?php while($book = $bestsellers->fetch_assoc()): ?>
-                            <div class="book-card">
-                                <a href="book_details.php?id=<?php echo $book['id']; ?>">
-                                    <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>">
-                                    <h3><?php echo $book['title']; ?></h3>
-                                    <p class="author">by <?php echo $book['author']; ?></p>
-                                    <p class="price">RM <?php echo number_format($book['price'], 2); ?></p>
-                                </a>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-                </div>
 
-                <!-- Staff Picks -->
-                <div class="collection-section">
-                    <h2>Staff Picks</h2>
-                    <div class="book-grid">
-                        <?php while($book = $staff_picks->fetch_assoc()): ?>
-                            <div class="book-card">
-                                <a href="book_details.php?id=<?php echo $book['id']; ?>">
-                                    <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>">
-                                    <h3><?php echo $book['title']; ?></h3>
-                                    <p class="author">by <?php echo $book['author']; ?></p>
-                                    <p class="price">RM <?php echo number_format($book['price'], 2); ?></p>
-                                </a>
-                            </div>
-                        <?php endwhile; ?>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
 
     <!-- Enhanced Footer -->
     <footer class="main-footer">
@@ -152,5 +128,15 @@ $staff_picks = $conn->query($sql_staff);
             <p>&copy; 2025 BookHaven. All rights reserved.</p>
         </div>
     </footer>
+    <script>
+function scroll(elementId, amount) {
+    const container = document.getElementById(elementId);
+    container.scrollBy({
+        left: amount,
+        behavior: 'smooth'
+    });
+}
+</script>
+
 </body>
 </html>

@@ -9,33 +9,19 @@
 <body>
     <div class="register-container">
         <h1>Sign Up as Admin</h1>
-        <form id="register-form" action="login.html" method="POST">
-            <!-- Error Message -->
-            <div class="error-message" id="error-message">Invalid invitation code.</div>
-
-            <!-- Admin Name -->
+        <form action="adminregister.php" method="POST">
             <label for="admin-name">Admin Name:</label>
             <input type="text" id="admin-name" name="admin-name" required>
-
-            <!-- Email -->
+        
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
-
-            <!-- Password -->
+        
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
-
-            <!-- Confirm Password -->
-            <label for="confirm-password">Confirm Password:</label>
-            <input type="password" id="confirm-password" name="confirm-password" required>
-
-            <!-- Invitation Code -->
-            <label for="invitation-code">Invitation Code:</label>
-            <input type="text" id="invitation-code" name="invitation-code" required>
-
-            <!-- Register Button -->
+        
             <button type="submit">Register</button>
         </form>
+        
     </div>
 
     <!-- JavaScript for Invitation Code Validation -->

@@ -1,0 +1,143 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Header */
+header {
+    background-color: #2563eb; /* Dark blue-gray */
+    color: #ecf0f1; /* Light gray */
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 24px;
+}
+
+header nav a {
+    color: #ecf0f1; /* Light gray */
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+header nav a:hover {
+    color: #3498db; /* Light blue */
+}
+
+/* Main Content */
+main {
+    padding: 20px;
+}
+
+/* Form Styling */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+form label {
+    display: block;
+    font-size: 16px;
+    color: #2c3e50; /* Dark blue-gray */
+    margin-bottom: 8px;
+}
+
+form input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+form input:focus {
+    border-color: #3498db; /* Light blue */
+}
+
+form button {
+    padding: 10px 20px;
+    background-color: #3498db; /* Light blue */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #2980b9; /* Darker blue */
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table th {
+    background-color: #2563eb; /* Dark blue-gray */
+    color: #ecf0f1; /* Light gray */
+    font-size: 16px;
+}
+
+table td {
+    font-size: 14px;
+    color: #333;
+}
+
+table td button {
+    padding: 8px 12px;
+    background-color: #3498db; /* Light blue */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 5px;
+}
+
+table td button:hover {
+    background-color: #2980b9; /* Darker blue */
+}
+
+table td button.delete {
+    background-color: #e74c3c; /* Red */
+}
+
+table td button.delete:hover {
+    background-color: #c0392b; /* Darker red */
+}
+

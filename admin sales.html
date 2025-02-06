@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <link rel="stylesheet" href="adminsales.css"> <!-- Link to the CSS file -->
+</head>
+<body>
+    <header>
+        <h1>Sales Report</h1>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="manage-books.html">Manage Books</a>
+            <a href="logout.html">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Sales Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Book Title</th>
+                        <th>Quantity Sold</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2025-01-01</td>
+                        <td>The Great Gatsby</td>
+                        <td>5</td>
+                        <td>RM 4,000</td>
+                    </tr>
+                    <tr>
+                        <td>2025-01-02</td>
+                        <td>1984</td>
+                        <td>3</td>
+                        <td>RM5,000</td>
+                    </tr>
+                    <tr>
+                        <td>2025-01-03</td>
+                        <td>Pride and Prejudice</td>
+                        <td>7</td>
+                        <td>RM2,345</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="window.print()">Print Report</button>
+        </section>
+    </main>
+</body>
+</html>
+

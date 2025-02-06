@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Books</title>
+    <link rel="stylesheet" href="adminmb.css"> <!-- Link to the CSS file -->
+</head>
+<body>
+    <header>
+        <h1>Manage Books</h1>
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="sales-report.html">Sales Report</a>
+            <a href="logout.html">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <!-- Add New Book Section -->
+        <section>
+            <h2>Add New Book</h2>
+            <form action="add-book.html" method="POST">
+                <label for="title">Book Title:</label>
+                <input type="text" id="title" name="title" required>
+
+                <label for="author">Author:</label>
+                <input type="text" id="author" name="author" required>
+
+                <label for="stock">Stock:</label>
+                <input type="number" id="stock" name="stock" required>
+
+                <button type="submit">Add Book</button>
+            </form>
+        </section>
+
+        <!-- Manage Existing Books Section -->
+        <section>
+            <h2>Manage Existing Books</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Stock</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>The Great Gatsby</td>
+                        <td>F. Scott Fitzgerald</td>
+                        <td>10</td>
+                        <td>
+                            <button>Edit</button>
+                            <button class="delete">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>1984</td>
+                        <td>George Orwell</td>
+                        <td>15</td>
+                        <td>
+                            <button>Edit</button>
+                            <button class="delete">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Pride and Prejudice</td>
+                        <td>Jane Austen</td>
+                        <td>8</td>
+                        <td>
+                            <button>Edit</button>
+                            <button class="delete">Delete</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>The Hobbit</td>
+                        <td>J.R.R Tolkien</td>
+                        <td>12</td>
+                        <td>
+                            <button>Edit</button>
+                            <button class="delete">Delete</button>
+                        </td>
+                    </tr>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
+

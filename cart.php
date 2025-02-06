@@ -29,29 +29,25 @@ if (!empty($_SESSION['cart'])) {
         <div class="header-container">
             <h1 class="site-title">BookHaven</h1>
             <nav class="nav-links">
-                <a href="index.php">Home</a>
-                <a href="products.php">Browse</a>
-                <div class="nav-right">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <a href="profile.php" class="profile-link">
-                            <i class="fas fa-user"></i>
-                    <?php echo $_SESSION['username']; ?>
-                        </a>
-                    <?php else: ?>
+    <a href="index.php">Home</a>
+    <a href="products.php">Browse</a>
+    <div class="nav-right">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="profile.php" class="profile-link">
+                <i class="fas fa-user"></i>
+                <?php echo $_SESSION['username']; ?>
+            </a>
+        <?php else: ?>
             <a href="login.php" class="login-link">
                 <i class="fas fa-sign-in-alt"></i>
                 Login
-                    </a>
-                 <?php endif; ?>
-                <div class="search-container">
-                 <!-- Search form here -->
-                </div>
-                    <a href="cart.php" class="cart-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count"><?php echo empty($_SESSION['cart']) ? '0' : count($_SESSION['cart']); ?></span>
-                    </a>
-                </div>
-            </nav>
+            </a>
+        <?php endif; ?>
+        <button onclick="history.back()" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+    </div>
+</nav>
 
         </div>
     </header>
@@ -93,21 +89,23 @@ if (!empty($_SESSION['cart'])) {
                     <?php endforeach; ?>
                 </div>
 
-                <div class="cart-summary">
-                    <h3>Order Summary</h3>
-                    <div class="summary-item">
-                        <span>Subtotal</span>
-                        <span>RM <?php echo number_format($subtotal, 2); ?></span>
-                    </div>
-                    <div class="summary-item">
-                        <span>Tax (8%)</span>
-                        <span>RM <?php echo number_format($subtotal * 0.08, 2); ?></span>
-                    </div>
-                    <div class="summary-total">
-                        <span>Total</span>
-                        <span>RM <?php echo number_format($subtotal * 1.08, 2); ?></span>
-                    </div>
-                    <button class="checkout-btn">Proceed to Checkout</button>
+                    <div class="cart-summary">
+    <h3>Order Summary</h3>
+    <div class="summary-item">
+        <span>Subtotal</span>
+        <span>RM <?php echo number_format($subtotal, 2); ?></span>
+    </div>
+    <div class="summary-item">
+        <span>Tax (8%)</span>
+        <span>RM <?php echo number_format($subtotal * 0.08, 2); ?></span>
+    </div>
+    <div class="summary-total">
+        <span>Total</span>
+        <span>RM <?php echo number_format($subtotal * 1.08, 2); ?></span>
+    </div>
+    <a href="checkout.php" class="checkout-btn">Proceed to Checkout</a>
+</div>
+
                 </div>
             <?php endif; ?>
         </div>

@@ -56,9 +56,12 @@ if (isset($_POST['login'])) {
                     <input type="email" id="email" name="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
+    <label for="password">Password</label>
+    <div class="password-container">
+        <input type="password" id="password" name="password" required>
+        <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
+    </div>
+</div>
                 <button type="submit" name="login" class="login-btn">Login</button>
             </form>
             <div class="register-link">
@@ -70,5 +73,22 @@ if (isset($_POST['login'])) {
     <footer class="footer">
         © 2025 BookHaven. All rights reserved.
     </footer>
+<script>
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+
 </body>
 </html>

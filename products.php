@@ -41,7 +41,12 @@ $result = $conn->query($sql);
             </a>
         <?php endif; ?>
         <div class="search-container">
-            <!-- Search form here -->
+            <form action="products.php" method="GET" class="search-form">
+                <input type="text" name="search" placeholder="Search books..." value="<?php echo htmlspecialchars($search); ?>" class="search-input">
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
         </div>
         <a href="cart.php" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
@@ -49,7 +54,6 @@ $result = $conn->query($sql);
         </a>
     </div>
 </nav>
-
         </div>
     </header>
 

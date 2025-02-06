@@ -38,9 +38,9 @@ if (isset($_GET['id'])) {
                 Login
             </a>
         <?php endif; ?>
-        <div class="search-container">
-            <!-- Search form here -->
-        </div>
+        <button onclick="history.back()" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
         <a href="cart.php" class="cart-icon">
             <i class="fas fa-shopping-cart"></i>
             <span class="cart-count"><?php echo empty($_SESSION['cart']) ? '0' : count($_SESSION['cart']); ?></span>

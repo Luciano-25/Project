@@ -32,11 +32,27 @@ if (!empty($_SESSION['cart'])) {
                 <a href="index.php">Home</a>
                 <a href="products.php">Browse</a>
                 <div class="nav-right">
-                    <button onclick="history.back()" class="back-button">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <a href="profile.php" class="profile-link">
+                            <i class="fas fa-user"></i>
+                    <?php echo $_SESSION['username']; ?>
+                        </a>
+                    <?php else: ?>
+            <a href="login.php" class="login-link">
+                <i class="fas fa-sign-in-alt"></i>
+                Login
+                    </a>
+                 <?php endif; ?>
+                <div class="search-container">
+                 <!-- Search form here -->
+                </div>
+                    <a href="cart.php" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count"><?php echo empty($_SESSION['cart']) ? '0' : count($_SESSION['cart']); ?></span>
+                    </a>
                 </div>
             </nav>
+
         </div>
     </header>
 

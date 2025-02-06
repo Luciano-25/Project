@@ -21,10 +21,24 @@ if (!empty($_SESSION['cart'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookHaven - Cart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <header class="top-header">
+        <div class="header-container">
+            <h1 class="site-title">BookHaven</h1>
+            <nav class="nav-links">
+                <a href="index.php">Home</a>
+                <a href="products.php">Browse</a>
+                <div class="nav-right">
+                    <button onclick="history.back()" class="back-button">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
 
     <div class="container">
         <div class="cart-container">
@@ -77,14 +91,14 @@ if (!empty($_SESSION['cart'])) {
                         <span>Total</span>
                         <span>RM <?php echo number_format($subtotal * 1.08, 2); ?></span>
                     </div>
-                    <form action="checkout.php" method="POST">
-                        <button type="submit" class="checkout-btn">Proceed to Checkout</button>
-                    </form>
+                    <button class="checkout-btn">Proceed to Checkout</button>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <footer class="footer">
+        © 2025 BookHaven. All rights reserved.
+    </footer>
 </body>
 </html>

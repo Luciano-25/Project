@@ -44,7 +44,7 @@
             <div class="member-info">
                 <h2>Riashini</h2>
                 <p class="member-age">Age: 20</p>
-                <p class="member-role">Role: UI/UX Designer</p>
+                <p class="member-role">Developer</p>
                 <p class="member-description"></p>
             </div>
         </div>

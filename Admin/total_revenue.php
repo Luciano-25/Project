@@ -1,7 +1,7 @@
 <?php
-include 'db_connect.php';
+include '../config.php';
 
-$sql = "SELECT SUM(total_price) AS total_revenue FROM sales";
+$sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
 $result = $conn->query($sql);
 $row = $result->fetch_assoc();
 $total_revenue = $row['total_revenue'];

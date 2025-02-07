@@ -1,6 +1,8 @@
+
+
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('images/hero-bg.jpg');
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('Images/hero.jpg');
     background-size: cover;
     background-position: center;
     height: 400px;
@@ -76,16 +78,17 @@
 }
 
 .book-card {
-    min-width: 220px;
+    min-width: 250px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    transition: all 0.4s ease;
     overflow: hidden;
 }
 
 .book-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .book-card img {
@@ -122,8 +125,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 5-px;
     border-radius: 50%;
     background: white;
     border: none;
@@ -139,6 +142,8 @@
 .scroll-right { right: -20px; }
 
 .scroll-btn:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
     background: #f8f9fa;
 }
 
@@ -156,7 +161,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 40px;
-    padding: 0 40px;
+    padding: 0 60px;
 }
 
 .footer-section h3 {
@@ -181,6 +186,7 @@
 
 .footer-section a:hover {
     color: #3498db;
+    padding-left: 5px;
 }
 
 /* Header Styles */
@@ -191,7 +197,9 @@
     position: sticky;
     top: 0;
     z-index: 1000;
+    font-family: 'Poppins', sans-serif;
 }
+
 
 .header-container {
     max-width: 1200px;
@@ -257,3 +265,5 @@
 .nav-links a:hover {
     color: #3498db;
 }
+
+

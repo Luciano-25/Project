@@ -15,7 +15,9 @@ if (!empty($_SESSION['cart'])) {
     $sql = "SELECT * FROM books WHERE id IN ($ids)";
     $result = $conn->query($sql);
     while ($book = $result->fetch_assoc()) {
-        $book['quantity'] = $_SESSION['cart'][$book['id']];
+        $current_item = $_SESSION['cart'][$book['id']];
+        $quantity = is_array($current_item) ? $current_item['quantity'] : $current_item;
+        $book['quantity'] = (int)$quantity;
         $cart_items[] = $book;
     }
 }

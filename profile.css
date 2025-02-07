@@ -1,0 +1,146 @@
+/* profile.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.profile-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.profile-info h1 {
+    color: white;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.profile-content {
+    display: grid;
+    gap: 30px;
+}
+
+.profile-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.profile-section h2 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.info-grid {
+    display: grid;
+    gap: 20px;
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.value {
+    color: #334155;
+    font-weight: 500;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.edit-btn, .logout-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.edit-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.edit-btn:hover, .logout-btn:hover {
+    transform: translateY(-2px);
+}
+
+.orders-list {
+    display: grid;
+    gap: 20px;
+}
+
+.order-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    padding: 20px;
+    transition: transform 0.2s;
+}
+
+.order-card:hover {
+    transform: translateY(-3px);
+    background: white;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.order-details {
+    display: grid;
+    gap: 15px;
+}
+
+.book-info {
+    display: flex;
+    justify-content: space-between;
+    color: #334155;
+}
+
+.book-title {
+    font-weight: 600;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #16a34a;
+    font-weight: 500;
+}

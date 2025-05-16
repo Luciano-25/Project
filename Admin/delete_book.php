@@ -20,13 +20,18 @@ if (isset($_GET['id'])) {
         }
     }
     
-    // Delete the book record
-    $sql = "DELETE FROM books WHERE id = ?";
-    $stmt = $conn->prepare($sql);
+    // Delete related orders
+    $delete_orders = "DELETE FROM orders WHERE book_id = ?";
+    $stmt = $conn->prepare($delete_orders);
+    $stmt->bind_param("i", $book_id);
+    $stmt->execute();
+    
+    // Delete the book
+    $delete_book = "DELETE FROM books WHERE id = ?";
+    $stmt = $conn->prepare($delete_book);
     $stmt->bind_param("i", $book_id);
     $stmt->execute();
 }
 
-// Redirect back to the books list
 header("Location: view_books.php");
 exit();

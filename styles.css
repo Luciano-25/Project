@@ -851,13 +851,13 @@ body {
 }
 
 .skip-review-btn {
-    background: #f5f6fa;
-    color: #666;
-    border: 1px solid #ddd;
+    background: #3498db;
+    color: white;
+    border: 1px solid #2980b9;
 }
 
 .skip-review-btn:hover {
-    background: #ecedef;
+    background: #2980b9;
     transform: translateY(-2px);
 }
 

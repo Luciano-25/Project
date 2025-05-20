@@ -2,19 +2,21 @@
 include '../config.php';
 
 $sql = "SELECT 
-            orders.id, 
-            orders.book_title,
+            orders.id,
             orders.book_id,
+            orders.book_title,
             orders.quantity,
-            orders.total_amount, 
-            orders.created_at as sale_date,
+            orders.total_amount,
+            orders.created_at AS sale_date,
             users.username,
             books.id AS book_exists,
-            (SELECT SUM(total_amount) FROM orders) as total_revenue
-        FROM orders 
+            (SELECT SUM(total_amount) FROM orders) AS total_revenue
+        FROM orders
         LEFT JOIN books ON orders.book_id = books.id
-        JOIN users ON orders.user_id = users.id 
+        JOIN users ON orders.user_id = users.id
         ORDER BY orders.created_at DESC";
+
+
 
 
 $result = $conn->query($sql);
@@ -51,6 +53,7 @@ $result = $conn->query($sql);
                     }
                     ?>
                 </td>
+
 
                 <td><?php echo $row['quantity']; ?></td>
                 <td><?php echo number_format($row['total_amount'], 2); ?></td>

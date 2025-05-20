@@ -119,8 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label>Rating (1-5 stars):</label>
-                <input type="number" name="rating" min="1" max="5" step="0.1" value="<?php echo $book['rating']; ?>" required>
+                <input type="number" name="rating" value="<?php echo $book['rating']; ?>" readonly style="background-color: #e9ecef;">
             </div>
+
             
             <div class="button-group">
                 <button type="submit" class="save-btn">Save Changes</button>

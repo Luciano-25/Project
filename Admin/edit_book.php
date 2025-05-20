@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                 <label>Rating (1-5 stars):</label>
+                 <label>Current Rating:</label>
                  <p><?php echo $book['rating']; ?> ⭐</p>
             </div>
 

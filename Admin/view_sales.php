@@ -4,14 +4,18 @@ include '../config.php';
 $sql = "SELECT 
             orders.id, 
             orders.book_title,
+            orders.book_id,
             orders.quantity,
             orders.total_amount, 
             orders.created_at as sale_date,
             users.username,
+            books.id AS book_exists,
             (SELECT SUM(total_amount) FROM orders) as total_revenue
         FROM orders 
+        LEFT JOIN books ON orders.book_id = books.id
         JOIN users ON orders.user_id = users.id 
         ORDER BY orders.created_at DESC";
+
 
 $result = $conn->query($sql);
 ?>
@@ -38,7 +42,16 @@ $result = $conn->query($sql);
         <?php while ($row = $result->fetch_assoc()): ?>
             <tr>
                 <td><?php echo $row['username']; ?></td>
-                <td><?php echo $row['book_title']; ?></td>
+                <td>
+                    <?php
+                    if (is_null($row['book_exists'])) {
+                        echo "Deleted Book (" . htmlspecialchars($row['book_title']) . ")";
+                    } else {
+                        echo htmlspecialchars($row['book_title']);
+                    }
+                    ?>
+                </td>
+
                 <td><?php echo $row['quantity']; ?></td>
                 <td><?php echo number_format($row['total_amount'], 2); ?></td>
                 <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>

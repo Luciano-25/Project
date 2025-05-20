@@ -14,26 +14,6 @@ $result = $conn->query($sql);
     <title>Manage Books - Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
-    <style>
-        .book-thumbnail {
-            width: 100px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .stock-display {
-            font-weight: 500;
-            color: #334155;
-            text-align: center;
-        }
-
-        table td {
-            vertical-align: middle;
-            padding: 15px;
-        }
-    </style>
 </head>
 <body>
 <?php include 'admin_header.php'; ?>

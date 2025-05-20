@@ -118,9 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                <label>Rating (1-5 stars):</label>
-                <input type="number" name="rating" min="1" max="5" step="0.1" value="<?php echo $book['rating']; ?>" required>
+                 <label>Current Rating:</label>
+                 <p><?php echo $book['rating']; ?> ⭐</p>
             </div>
+
+
             
             <div class="button-group">
                 <button type="submit" class="save-btn">Save Changes</button>

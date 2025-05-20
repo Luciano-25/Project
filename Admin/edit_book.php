@@ -118,9 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                <label>Current Rating:</label>
-                <input type="number" name="rating" value="<?php echo $book['rating']; ?>" readonly style="background-color: #e9ecef;">
+                 <label>Rating (1-5 stars):</label>
+                 <p><?php echo $book['rating']; ?> ⭐</p>
             </div>
+
 
             
             <div class="button-group">

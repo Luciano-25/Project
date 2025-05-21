@@ -114,6 +114,7 @@ $user = $stmt->get_result()->fetch_assoc();
                             <div class="form-group">
                                 <label for="expiry">Expiry Date</label>
                                 <input type="text" id="expiry" name="expiry" placeholder="MM/YY" maxlength="5" required>
+                                <small id="expiry-error" style="color: red;"></small> <!-- ✅ Live error container -->
                             </div>
                             <div class="form-group">
                                 <label for="cvv">CVV</label>
@@ -165,7 +166,7 @@ $user = $stmt->get_result()->fetch_assoc();
     </footer>
 
     <script>
-        // Format card number with spaces
+        // Format card number
         document.getElementById('card_number').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '');
         });
@@ -182,6 +183,32 @@ $user = $stmt->get_result()->fetch_assoc();
         // Format CVV
         document.getElementById('cvv').addEventListener('input', function(e) {
             this.value = this.value.replace(/\D/g, '');
+        });
+
+        // ✅ Live validation for expiry date (no expired cards)
+        document.getElementById("expiry").addEventListener("input", function () {
+            const expiryInput = this.value;
+            const errorContainer = document.getElementById("expiry-error");
+
+            errorContainer.textContent = ""; // Clear old error
+
+            const match = expiryInput.match(/^(\d{2})\/(\d{2})$/);
+            if (!match) return; // Incomplete format
+
+            const inputMonth = parseInt(match[1]);
+            const inputYear = 2000 + parseInt(match[2]);
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            if (
+                inputMonth < 1 || inputMonth > 12 ||
+                inputYear < currentYear ||
+                (inputYear === currentYear && inputMonth < currentMonth)
+            ) {
+                errorContainer.textContent = "❌ Expired card date.";
+            }
         });
     </script>
 </body>

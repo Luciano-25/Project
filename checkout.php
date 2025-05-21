@@ -166,50 +166,73 @@ $user = $stmt->get_result()->fetch_assoc();
     </footer>
 
     <script>
-        // Format card number
-        document.getElementById('card_number').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-        });
+    // Format card number
+    document.getElementById('card_number').addEventListener('input', function (e) {
+        this.value = this.value.replace(/\D/g, '');
+    });
 
-        // Format expiry date
-        document.getElementById('expiry').addEventListener('input', function(e) {
-            let value = this.value.replace(/\D/g, '');
-            if (value.length >= 2) {
-                value = value.slice(0,2) + '/' + value.slice(2);
-            }
-            this.value = value;
-        });
+    // Format expiry date
+    document.getElementById('expiry').addEventListener('input', function (e) {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        this.value = value;
 
-        // Format CVV
-        document.getElementById('cvv').addEventListener('input', function(e) {
-            this.value = this.value.replace(/\D/g, '');
-        });
+        // Also run validation while typing
+        validateExpiry();
+    });
 
-        // ✅ Live validation for expiry date (no expired cards)
-        document.getElementById("expiry").addEventListener("input", function () {
-            const expiryInput = this.value;
-            const errorContainer = document.getElementById("expiry-error");
+    // Format CVV
+    document.getElementById('cvv').addEventListener('input', function (e) {
+        this.value = this.value.replace(/\D/g, '');
+    });
 
-            errorContainer.textContent = ""; // Clear old error
+    // Add expiry error container if not present
+    const expiryField = document.getElementById("expiry");
+    if (!document.getElementById("expiry-error")) {
+        const errorSmall = document.createElement("small");
+        errorSmall.id = "expiry-error";
+        errorSmall.style.color = "red";
+        expiryField.insertAdjacentElement("afterend", errorSmall);
+    }
 
-            const match = expiryInput.match(/^(\d{2})\/(\d{2})$/);
-            if (!match) return; // Incomplete format
+    // Real-time expiry validation
+    function validateExpiry() {
+        const expiryInput = document.getElementById("expiry").value;
+        const errorContainer = document.getElementById("expiry-error");
 
-            const inputMonth = parseInt(match[1]);
-            const inputYear = 2000 + parseInt(match[2]);
+        errorContainer.textContent = "";
 
-            const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
+        const match = expiryInput.match(/^(\d{2})\/(\d{2})$/);
+        if (!match) return true; // Let the user finish typing
 
-            if (
-                inputMonth < 1 || inputMonth > 12 ||
-                inputYear < currentYear ||
-                (inputYear === currentYear && inputMonth < currentMonth)
-            ) {
-                errorContainer.textContent = "❌ Expired card date.";
-            }
-        });
-    </script>
+        const inputMonth = parseInt(match[1]);
+        const inputYear = 2000 + parseInt(match[2]);
+
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1;
+        const currentYear = now.getFullYear();
+
+        if (
+            inputMonth < 1 || inputMonth > 12 ||
+            inputYear < currentYear ||
+            (inputYear === currentYear && inputMonth < currentMonth)
+        ) {
+            errorContainer.textContent = "❌ Expired card date.";
+            return false;
+        }
+
+        return true;
+    }
+
+    // Prevent form submission if expiry date is invalid
+    document.getElementById("checkoutForm").addEventListener("submit", function (e) {
+        if (!validateExpiry()) {
+            e.preventDefault();
+        }
+    });
+</script>
+
 </body>
 </html>

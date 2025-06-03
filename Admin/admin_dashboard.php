@@ -47,7 +47,7 @@ $total_revenue = $revenue_result->fetch_assoc()['total_revenue'] ?: 0;
     <div class="dashboard-container">
         <div class="stats-grid">
 
-            <a href="bookslist.php" class="stat-link">
+            <a href="booklist.php" class="stat-link">
                 <div class="stat-card books">
                     <i class="fas fa-book"></i>
                     <div class="stat-info">
@@ -67,7 +67,7 @@ $total_revenue = $revenue_result->fetch_assoc()['total_revenue'] ?: 0;
                 </div>
             </a>
             
-            <a href="customers_list.php" class="stat-link">
+            <a href="customer_list.php" class="stat-link">
                 <div class="stat-card customers">
                     <i class="fas fa-users"></i>
                     <div class="stat-info">

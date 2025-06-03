@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     image_url = ?
                     WHERE id = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssdisissi", $title, $author, $description, $price, $stock, $rating, $genre, $image_url, $book_id);
+            $stmt->bind_param("sssdidssi", $title, $author, $description, $price, $stock, $rating, $genre, $image_url, $book_id);
         }
     } else {
         $sql = "UPDATE books SET 
@@ -59,12 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 genre = ?
                 WHERE id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssdisisi", $title, $author, $description, $price, $stock, $rating, $genre, $book_id);
+        $stmt->bind_param("sssdidsi", $title, $author, $description, $price, $stock, $rating, $genre, $book_id);
     }
 
     if ($stmt->execute()) {
         header("Location: view_books.php");
         exit();
+    } else {
+        echo "Error updating book: " . $stmt->error;
     }
 }
 ?>
@@ -83,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form action="" method="POST" enctype="multipart/form-data" class="edit-form">
             <div class="form-group">
                 <label>Current Image:</label>
-                <img src="../<?php echo $book['image_url']; ?>" alt="Current book image" class="current-image">
+                <img src="../<?php echo htmlspecialchars($book['image_url']); ?>" alt="Current book image" class="current-image">
             </div>
 
             <div class="form-group">
@@ -117,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-group">
-                 <label>Current Rating:</label>
-                 <p><?php echo $book['rating']; ?> ⭐</p>
+                <label>Current Rating:</label>
+                <p><?php echo $book['rating']; ?> ⭐</p>
             </div>
 
             <div class="form-group">

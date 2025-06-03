@@ -10,10 +10,11 @@ if (!isset($_SESSION['cart'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $book_id = $_POST['book_id'];
     $quantity = isset($_POST['quantity']) ? (int)$_POST['quantity'] : 1;
-    
+
     $_SESSION['cart'][$book_id] = $quantity;
     $_SESSION['total_books'] = count($_SESSION['cart']);
-    
-    header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+    // Redirect directly to cart page after adding to cart
+    header('Location: cart.php');
     exit();
 }

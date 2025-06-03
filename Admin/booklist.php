@@ -12,7 +12,7 @@ $result = $conn->query($sql);
 <head>
     <meta charset="UTF-8" />
     <title>Book List - Admin</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../styles.css" />
 </head>
 <body>
     <div class="container">
@@ -20,7 +20,6 @@ $result = $conn->query($sql);
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Title</th>
                     <th>Author</th>
                     <th>Price (RM)</th>
@@ -33,7 +32,6 @@ $result = $conn->query($sql);
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($book = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($book['id']); ?></td>
                         <td><?php echo htmlspecialchars($book['title']); ?></td>
                         <td><?php echo htmlspecialchars($book['author']); ?></td>
                         <td><?php echo number_format($book['price'], 2); ?></td>

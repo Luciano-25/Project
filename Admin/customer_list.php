@@ -20,7 +20,6 @@ $result = $conn->query($sql);
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Registered On</th>
@@ -30,7 +29,6 @@ $result = $conn->query($sql);
                 <?php if ($result->num_rows > 0): ?>
                     <?php while ($customer = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($customer['id']); ?></td>
                         <td><?php echo htmlspecialchars($customer['username']); ?></td>
                         <td><?php echo htmlspecialchars($customer['email']); ?></td>
                         <td><?php echo date('d M Y', strtotime($customer['created_at'])); ?></td>

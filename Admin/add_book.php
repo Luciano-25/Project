@@ -7,8 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = $_POST['description'];
     $price = $_POST['price'];
     $stock = $_POST['stock'];
-    $rating = $_POST['rating'];
     $genre = $_POST['genre'];
+    $rating = 0; // Default rating - no manual input
 
     if (!empty($_FILES['image']['name'])) {
         $target_dir = "../Images/";
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sssdisis", $title, $author, $description, $price, $stock, $image_url, $rating, $genre);
+    $stmt->bind_param("sssdisds", $title, $author, $description, $price, $stock, $image_url, $rating, $genre);
 
     if ($stmt->execute()) {
         header("Location: view_books.php");
@@ -76,11 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group">
                 <label>Stock:</label>
                 <input type="number" name="stock" min="0" required>
-            </div>
-
-            <div class="form-group">
-                <label>Rating (1-5 stars):</label>
-                <input type="number" name="rating" min="1" max="5" step="0.1" required>
             </div>
 
             <div class="form-group">

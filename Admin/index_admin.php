@@ -27,7 +27,7 @@ $staff_picks = $conn->query($sql_staff);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-<?php include 'header.php'; ?>
+<?php include '../header.php'; ?>
 
 <!-- Back to Admin Dashboard button -->
 <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin'): ?>

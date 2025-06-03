@@ -2,7 +2,6 @@
 session_start();
 require_once '../config.php';
 
-
 // Fetch featured books (newest 4 books)
 $sql_new = "SELECT * FROM books ORDER BY id DESC LIMIT 4";
 $new_arrivals = $conn->query($sql_new);
@@ -32,7 +31,7 @@ $staff_picks = $conn->query($sql_staff);
 <!-- Back to Admin Dashboard button -->
 <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin'): ?>
     <div style="padding: 15px; max-width: 1200px; margin: 20px auto; text-align: right;">
-        <a href="/admin/admin_dashboard.php" 
+        <a href="admin_dashboard.php" 
            style="
               background-color: #2c3e50; 
               color: white; 
@@ -55,7 +54,7 @@ $staff_picks = $conn->query($sql_staff);
         <div class="hero-content">
             <h1>Discover Your Next Great Read</h1>
             <p>Explore our vast collection of books for every reader</p>
-            <a href="products.php" class="cta-button">Browse Books</a>
+            <a href="../products.php" class="cta-button">Browse Books</a>
         </div>
     </section>
 
@@ -63,7 +62,7 @@ $staff_picks = $conn->query($sql_staff);
         <div class="collection-section">
             <div class="section-header">
                 <h2>New Arrivals</h2>
-                <a href="products.php?category=new" class="view-all">View All →</a>
+                <a href="../products.php?category=new" class="view-all">View All →</a>
             </div>
             <button class="scroll-btn scroll-left" onclick="scroll('new-arrivals', -300)">
                 <i class="fas fa-chevron-left"></i>
@@ -71,8 +70,8 @@ $staff_picks = $conn->query($sql_staff);
             <div class="book-grid" id="new-arrivals">
                 <?php while($book = $new_arrivals->fetch_assoc()): ?>
                     <div class="book-card">
-                        <a href="book_details.php?id=<?php echo $book['id']; ?>">
-                            <img src="<?php echo $book['image_url']; ?>" alt="<?php echo $book['title']; ?>">
+                        <a href="../book_details.php?id=<?php echo $book['id']; ?>">
+                            <img src="/<?php echo $book['image_url']; ?>" alt="<?php echo htmlspecialchars($book['title']); ?>">
                             <div class="book-info">
                                 <h3 class="book-title"><?php echo $book['title']; ?></h3>
                                 <p class="book-author">by <?php echo $book['author']; ?></p>
@@ -94,16 +93,16 @@ $staff_picks = $conn->query($sql_staff);
             <div class="footer-section">
                 <h3>About BookHaven</h3>
                 <p>Your premier destination for books of all genres. We're passionate about connecting readers with their next favorite book.</p>
-                <a href="about.php">About Us</a>
+                <a href="../about.php">About Us</a>
             </div>
             
             <div class="footer-section">
                 <h3>Customer Service</h3>
                 <ul>
-                    <li><a href="contact2.php">Contact Us</a></li>
-                    <li><a href="shipping.php">Shipping Information</a></li>
-                    <li><a href="returns.php">Returns Policy</a></li>
-                    <li><a href="faq.php">FAQ</a></li>
+                    <li><a href="../contact2.php">Contact Us</a></li>
+                    <li><a href="../shipping.php">Shipping Information</a></li>
+                    <li><a href="../returns.php">Returns Policy</a></li>
+                    <li><a href="../faq.php">FAQ</a></li>
                 </ul>
             </div>
             

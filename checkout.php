@@ -84,9 +84,18 @@ $user = $stmt->get_result()->fetch_assoc();
                             <input type="email" id="email" name="email" value="<?php echo $user['email']; ?>" required>
                         </div>
                         <div class="form-group">
-                            <label for="address">Shipping Address</label>
-                            <textarea id="address" name="address" required></textarea>
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="shipping_address" required>
                         </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="shipping_city" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="postal">Postal Code</label>
+                            <input type="text" id="postal" name="shipping_postal_code" required>
+                        </div>
+
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
                             <input type="tel" id="phone" name="phone" required>

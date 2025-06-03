@@ -3,6 +3,7 @@
 include '../config.php';
 include 'admin_header.php';
 
+// Only select users with role 'user'
 $customers = $conn->query("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC");
 ?>
 
@@ -32,6 +33,13 @@ $customers = $conn->query("SELECT * FROM users WHERE role = 'user' ORDER BY crea
         }
         h2 {
             margin-bottom: 20px;
+            padding-top: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
     </style>
 </head>
@@ -39,11 +47,14 @@ $customers = $conn->query("SELECT * FROM users WHERE role = 'user' ORDER BY crea
 <div class="container">
     <h2>All Customers</h2>
     <table class="styled-table">
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Created At</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php while ($customer = $customers->fetch_assoc()): ?>
             <tr>
                 <td><?= htmlspecialchars($customer['username']) ?></td>
@@ -51,6 +62,7 @@ $customers = $conn->query("SELECT * FROM users WHERE role = 'user' ORDER BY crea
                 <td><?= date('d M Y', strtotime($customer['created_at'])) ?></td>
             </tr>
         <?php endwhile; ?>
+        </tbody>
     </table>
 </div>
 </body>

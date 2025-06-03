@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = $_POST['description'];
     $price = $_POST['price'];
     $stock = $_POST['stock'];
-    $rating = $_POST['rating'];
     $genre = $_POST['genre'];
 
     if (!empty($_FILES['image']['name'])) {
@@ -41,12 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     description = ?, 
                     price = ?, 
                     stock = ?,
-                    rating = ?,
                     genre = ?,
                     image_url = ?
                     WHERE id = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssdidssi", $title, $author, $description, $price, $stock, $rating, $genre, $image_url, $book_id);
+            $stmt->bind_param("sssdisii", $title, $author, $description, $price, $stock, $genre, $image_url, $book_id);
         }
     } else {
         $sql = "UPDATE books SET 
@@ -55,18 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 description = ?, 
                 price = ?, 
                 stock = ?,
-                rating = ?,
                 genre = ?
                 WHERE id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssdidsi", $title, $author, $description, $price, $stock, $rating, $genre, $book_id);
+        $stmt->bind_param("sssdisi", $title, $author, $description, $price, $stock, $genre, $book_id);
     }
 
     if ($stmt->execute()) {
         header("Location: view_books.php");
         exit();
-    } else {
-        echo "Error updating book: " . $stmt->error;
     }
 }
 ?>
@@ -80,73 +75,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-    <div class="edit-container">
-        <h2>Edit Book Details</h2>
-        <form action="" method="POST" enctype="multipart/form-data" class="edit-form">
-            <div class="form-group">
-                <label>Current Image:</label>
-                <img src="../<?php echo htmlspecialchars($book['image_url']); ?>" alt="Current book image" class="current-image">
-            </div>
+<div class="edit-container">
+    <h2>Edit Book Details</h2>
+    <form action="" method="POST" enctype="multipart/form-data" class="edit-form">
+        <div class="form-group">
+            <label>Current Image:</label>
+            <img src="../<?php echo $book['image_url']; ?>" alt="Current book image" class="current-image">
+        </div>
 
-            <div class="form-group">
-                <label>New Image (optional):</label>
-                <input type="file" name="image" accept="image/*">
-            </div>
+        <div class="form-group">
+            <label>New Image (optional):</label>
+            <input type="file" name="image" accept="image/*">
+        </div>
 
-            <div class="form-group">
-                <label>Title:</label>
-                <input type="text" name="title" value="<?php echo htmlspecialchars($book['title']); ?>" required>
-            </div>
+        <div class="form-group">
+            <label>Title:</label>
+            <input type="text" name="title" value="<?php echo htmlspecialchars($book['title']); ?>" required>
+        </div>
 
-            <div class="form-group">
-                <label>Author:</label>
-                <input type="text" name="author" value="<?php echo htmlspecialchars($book['author']); ?>" required>
-            </div>
+        <div class="form-group">
+            <label>Author:</label>
+            <input type="text" name="author" value="<?php echo htmlspecialchars($book['author']); ?>" required>
+        </div>
 
-            <div class="form-group">
-                <label>Description:</label>
-                <textarea name="description" rows="5" required><?php echo htmlspecialchars($book['description']); ?></textarea>
-            </div>
+        <div class="form-group">
+            <label>Description:</label>
+            <textarea name="description" rows="5" required><?php echo htmlspecialchars($book['description']); ?></textarea>
+        </div>
 
-            <div class="form-group">
-                <label>Price (RM):</label>
-                <input type="number" name="price" step="0.01" value="<?php echo $book['price']; ?>" required>
-            </div>
+        <div class="form-group">
+            <label>Price (RM):</label>
+            <input type="number" name="price" step="0.01" value="<?php echo $book['price']; ?>" required>
+        </div>
 
-            <div class="form-group">
-                <label>Stock:</label>
-                <input type="number" name="stock" min="0" value="<?php echo $book['stock']; ?>" required>
-            </div>
+        <div class="form-group">
+            <label>Stock:</label>
+            <input type="number" name="stock" min="0" value="<?php echo $book['stock']; ?>" required>
+        </div>
 
-            <div class="form-group">
-                <label>Current Rating:</label>
-                <p><?php echo $book['rating']; ?> ⭐</p>
-            </div>
+        <div class="form-group">
+            <label>Current Rating:</label>
+            <p><?php echo number_format($book['rating'], 1); ?> ⭐ (Customer Based)</p>
+        </div>
 
-            <div class="form-group">
-                <label>Rating (1-5 stars):</label>
-                <input type="number" name="rating" min="1" max="5" step="0.1" value="<?php echo $book['rating']; ?>" required>
-            </div>
+        <div class="form-group">
+            <label>Genre:</label>
+            <select name="genre" required>
+                <option value="">-- Select Genre --</option>
+                <?php
+                $genres = ["Fantasy", "Mystery", "Science Fiction", "Horror", "Romance", "Fiction", "Adventure", "Children", "Thriller", "Biography", "History", "Cookbook"];
+                foreach ($genres as $g) {
+                    $selected = ($book['genre'] === $g) ? 'selected' : '';
+                    echo "<option value=\"$g\" $selected>$g</option>";
+                }
+                ?>
+            </select>
+        </div>
 
-            <div class="form-group">
-                <label>Genre:</label>
-                <select name="genre" required>
-                    <option value="">-- Select Genre --</option>
-                    <?php
-                    $genres = ["Fantasy", "Mystery", "Science Fiction", "Horror", "Romance", "Fiction", "Adventure", "Children", "Thriller", "Biography", "History", "Cookbook"];
-                    foreach ($genres as $g) {
-                        $selected = ($book['genre'] === $g) ? 'selected' : '';
-                        echo "<option value=\"$g\" $selected>$g</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="save-btn">Save Changes</button>
-                <a href="view_books.php" class="cancel-btn">Cancel</a>
-            </div>
-        </form>
-    </div>
+        <div class="button-group">
+            <button type="submit" class="save-btn">Save Changes</button>
+            <a href="view_books.php" class="cancel-btn">Cancel</a>
+        </div>
+    </form>
+</div>
 </body>
 </html>

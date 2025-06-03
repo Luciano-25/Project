@@ -19,7 +19,7 @@ switch ($filter) {
         $label = "Total Revenue";
 }
 
-// Query for sales list (unchanged)
+// Updated sales query to include shipping details
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -27,6 +27,9 @@ $sales_sql = "SELECT
                 orders.quantity,
                 orders.total_amount,
                 orders.created_at AS sale_date,
+                orders.shipping_address,
+                orders.shipping_city,
+                orders.shipping_postal_code,
                 users.username,
                 books.id AS book_exists
             FROM orders
@@ -91,6 +94,9 @@ $revenue_result = $conn->query($revenue_sql);
             <th>Quantity</th>
             <th>Total Amount (RM)</th>
             <th>Sale Date</th>
+            <th>Shipping Address</th>
+            <th>City</th>
+            <th>Postal Code</th>
         </tr>
         <?php while ($row = $sales_result->fetch_assoc()): ?>
             <tr>
@@ -107,6 +113,9 @@ $revenue_result = $conn->query($revenue_sql);
                 <td><?php echo $row['quantity']; ?></td>
                 <td><?php echo number_format($row['total_amount'], 2); ?></td>
                 <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
             </tr>
         <?php endwhile; ?>
     </table>

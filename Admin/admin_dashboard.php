@@ -30,43 +30,65 @@ $total_revenue = $revenue_result->fetch_assoc()['total_revenue'] ?: 0;
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admindash.css">
+    <style>
+        /* Optional: make the entire card clickable and remove default link styles */
+        a.stat-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        a.stat-link:hover {
+            background-color: #f0f0f0; /* subtle hover effect */
+        }
+    </style>
 </head>
 <body>
 
     <div class="dashboard-container">
         <div class="stats-grid">
-            <div class="stat-card books">
-                <i class="fas fa-book"></i>
-                <div class="stat-info">
-                    <h3>Total Books</h3>
-                    <p><?php echo $total_books; ?></p>
+
+            <a href="bookslist.php" class="stat-link">
+                <div class="stat-card books">
+                    <i class="fas fa-book"></i>
+                    <div class="stat-info">
+                        <h3>Total Books</h3>
+                        <p><?php echo $total_books; ?></p>
+                    </div>
                 </div>
-            </div>
+            </a>
             
-            <div class="stat-card orders">
-                <i class="fas fa-shopping-cart"></i>
-                <div class="stat-info">
-                    <h3>Total Orders</h3>
-                    <p><?php echo $total_orders; ?></p>
+            <a href="view_sales.php" class="stat-link">
+                <div class="stat-card orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div class="stat-info">
+                        <h3>Total Orders</h3>
+                        <p><?php echo $total_orders; ?></p>
+                    </div>
                 </div>
-            </div>
+            </a>
             
-            <div class="stat-card customers">
-                <i class="fas fa-users"></i>
-                <div class="stat-info">
-                    <h3>Total Customers</h3>
-                    <p><?php echo $total_customers; ?></p>
+            <a href="customers_list.php" class="stat-link">
+                <div class="stat-card customers">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-info">
+                        <h3>Total Customers</h3>
+                        <p><?php echo $total_customers; ?></p>
+                    </div>
                 </div>
-            </div>
+            </a>
             
-            <div class="stat-card revenue">
-                <i class="fas fa-dollar-sign"></i>
-                <div class="stat-info">
-                    <h3>Total Revenue</h3>
-                    <p>RM <?php echo number_format($total_revenue, 2); ?></p>
+            <a href="total_revenue.php" class="stat-link">
+                <div class="stat-card revenue">
+                    <i class="fas fa-dollar-sign"></i>
+                    <div class="stat-info">
+                        <h3>Total Revenue</h3>
+                        <p>RM <?php echo number_format($total_revenue, 2); ?></p>
+                    </div>
                 </div>
-            </div>
+            </a>
+
         </div>
     </div>
+
 </body>
 </html>

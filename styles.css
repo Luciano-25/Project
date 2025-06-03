@@ -1312,6 +1312,20 @@ body {
     width: fit-content;
 }
 
+/* Make the entire stat card clickable */
+a.stat-link {
+    text-decoration: none; /* Remove underline */
+    color: inherit;        /* Keep text color */
+    display: block;        /* So it covers the whole card */
+}
+
+/* Hover effect on clickable cards */
+a.stat-link:hover .stat-card {
+    background-color: #f0f0f0; /* Light gray background on hover */
+    cursor: pointer;            /* Pointer cursor */
+    transition: background-color 0.3s ease;
+}
+
 
 
 

@@ -201,3 +201,26 @@ tr:hover {
         padding: 0;
     }
 }
+
+.genre-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+.genre-badge.fantasy { background-color: #8e44ad; }           /* purple */
+.genre-badge.mystery { background-color: #2c3e50; }           /* dark blue */
+.genre-badge.science-fiction { background-color: #16a085; }  /* teal */
+.genre-badge.horror { background-color: #c0392b; }            /* red */
+.genre-badge.romance { background-color: #e91e63; }           /* pink */
+.genre-badge.fiction { background-color: #3498db; }           /* blue */
+.genre-badge.adventure { background-color: #e67e22; }         /* orange */
+.genre-badge.children { background-color: #f39c12; }          /* yellow-orange */
+.genre-badge.thriller { background-color: #34495e; }          /* gray-blue */
+.genre-badge.biography { background-color: #27ae60; }         /* green */
+.genre-badge.history { background-color: #7f8c8d; }           /* gray */
+.genre-badge.cookbook { background-color: #d35400; }          /* dark orange */

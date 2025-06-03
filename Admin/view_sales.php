@@ -48,15 +48,78 @@ $revenue_result = $conn->query($revenue_sql);
 <head>
     <meta charset="UTF-8">
     <title>Sales Report - BookHaven</title>
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        h2, h3 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        select {
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: #fff;
+        }
+
+        tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .print-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .print-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
 <?php include 'admin_header.php'; ?>
 
+<div class="container">
     <h2>Sales Report</h2>
 
     <!-- Revenue Filter -->
-    <form method="get" style="margin-bottom: 20px;">
+    <form method="get">
         <label for="filter">View Revenue By:</label>
         <select name="filter" id="filter" onchange="this.form.submit()">
             <option value="all" <?php if($filter === 'all') echo 'selected'; ?>>All Time</option>
@@ -69,7 +132,7 @@ $revenue_result = $conn->query($revenue_sql);
 
     <?php if ($filter === 'all'): ?>
         <?php $row = $revenue_result->fetch_assoc(); ?>
-        <p>Total Revenue: RM <?php echo number_format($row['total_revenue'], 2); ?></p>
+        <p>Total Revenue: <strong>RM <?php echo number_format($row['total_revenue'], 2); ?></strong></p>
     <?php else: ?>
         <table>
             <tr>
@@ -121,5 +184,6 @@ $revenue_result = $conn->query($revenue_sql);
     </table>
 
     <button class="print-btn" onclick="window.print()">Print Report</button>
+</div>
 </body>
 </html>

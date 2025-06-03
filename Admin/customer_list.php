@@ -4,7 +4,7 @@ include '../config.php';
 include 'admin_header.php';
 
 // Only select users with role 'user'
-$customers = $conn->query("SELECT * FROM users WHERE role = 'user' ORDER BY created_at DESC");
+$customers = $conn->query("SELECT * FROM users WHERE user_type != 'admin' ORDER BY created_at DESC");
 ?>
 
 <!DOCTYPE html>

@@ -1,6 +1,7 @@
 <?php 
 session_start();
-require_once 'config.php';
+require_once '../config.php';
+
 
 // Fetch featured books (newest 4 books)
 $sql_new = "SELECT * FROM books ORDER BY id DESC LIMIT 4";

@@ -1,31 +1,48 @@
 <?php
 include '../config.php';
 
-$sql = "SELECT 
-            orders.id,
-            orders.book_id,
-            orders.book_title,
-            orders.quantity,
-            orders.total_amount,
-            orders.created_at AS sale_date,
-            users.username,
-            books.id AS book_exists,
-            (SELECT SUM(total_amount) FROM orders) AS total_revenue
-        FROM orders
-        LEFT JOIN books ON orders.book_id = books.id
-        JOIN users ON orders.user_id = users.id
-        ORDER BY orders.created_at DESC";
+// Check if filter type is set
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 
+// Dynamic SQL for total revenue
+switch ($filter) {
+    case 'monthly':
+        $revenue_sql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS period, SUM(total_amount) AS total_revenue FROM orders GROUP BY period ORDER BY period DESC";
+        $label = "Monthly Revenue";
+        break;
+    case 'yearly':
+        $revenue_sql = "SELECT YEAR(created_at) AS period, SUM(total_amount) AS total_revenue FROM orders GROUP BY period ORDER BY period DESC";
+        $label = "Yearly Revenue";
+        break;
+    default:
+        $revenue_sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
+        $label = "Total Revenue";
+}
 
+// Query for sales list (unchanged)
+$sales_sql = "SELECT 
+                orders.id,
+                orders.book_id,
+                orders.book_title,
+                orders.quantity,
+                orders.total_amount,
+                orders.created_at AS sale_date,
+                users.username,
+                books.id AS book_exists
+            FROM orders
+            LEFT JOIN books ON orders.book_id = books.id
+            JOIN users ON orders.user_id = users.id
+            ORDER BY orders.created_at DESC";
 
+$sales_result = $conn->query($sales_sql);
 
-$result = $conn->query($sql);
+// Revenue query
+$revenue_result = $conn->query($revenue_sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <title>Sales Report - BookHaven</title>
     <link rel="stylesheet" href="admin.css">
@@ -33,6 +50,40 @@ $result = $conn->query($sql);
 <body>
 <?php include 'admin_header.php'; ?>
 
+    <h2>Sales Report</h2>
+
+    <!-- Revenue Filter -->
+    <form method="get" style="margin-bottom: 20px;">
+        <label for="filter">View Revenue By:</label>
+        <select name="filter" id="filter" onchange="this.form.submit()">
+            <option value="all" <?php if($filter === 'all') echo 'selected'; ?>>All Time</option>
+            <option value="monthly" <?php if($filter === 'monthly') echo 'selected'; ?>>Monthly</option>
+            <option value="yearly" <?php if($filter === 'yearly') echo 'selected'; ?>>Yearly</option>
+        </select>
+    </form>
+
+    <h3><?php echo $label; ?></h3>
+
+    <?php if ($filter === 'all'): ?>
+        <?php $row = $revenue_result->fetch_assoc(); ?>
+        <p>Total Revenue: RM <?php echo number_format($row['total_revenue'], 2); ?></p>
+    <?php else: ?>
+        <table>
+            <tr>
+                <th><?php echo $filter === 'monthly' ? 'Month' : 'Year'; ?></th>
+                <th>Total Revenue (RM)</th>
+            </tr>
+            <?php while($row = $revenue_result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['period']); ?></td>
+                    <td><?php echo number_format($row['total_revenue'], 2); ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    <?php endif; ?>
+
+    <!-- Sales List Table -->
+    <h3>Sales Transactions</h3>
     <table>
         <tr>
             <th>Customer</th>
@@ -41,9 +92,9 @@ $result = $conn->query($sql);
             <th>Total Amount (RM)</th>
             <th>Sale Date</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $sales_result->fetch_assoc()): ?>
             <tr>
-                <td><?php echo $row['username']; ?></td>
+                <td><?php echo htmlspecialchars($row['username']); ?></td>
                 <td>
                     <?php
                     if (is_null($row['book_exists'])) {
@@ -53,16 +104,12 @@ $result = $conn->query($sql);
                     }
                     ?>
                 </td>
-
-
                 <td><?php echo $row['quantity']; ?></td>
                 <td><?php echo number_format($row['total_amount'], 2); ?></td>
                 <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>
             </tr>
         <?php endwhile; ?>
     </table>
-
-    <?php include 'total_revenue.php'; ?>
 
     <button class="print-btn" onclick="window.print()">Print Report</button>
 </body>

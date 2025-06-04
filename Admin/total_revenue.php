@@ -7,4 +7,7 @@ $row = $result->fetch_assoc();
 $total_revenue = $row['total_revenue'];
 ?>
 
-<h3>Total Revenue: RM <?php echo number_format($total_revenue, 2); ?></h3>
+<div class="revenue-container">
+    <h3>Total Revenue</h3>
+    <p>RM <?php echo number_format($total_revenue, 2); ?></p>
+</div>

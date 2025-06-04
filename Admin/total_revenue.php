@@ -1,5 +1,4 @@
 <?php
-<?php
 include '../config.php';
 
 $sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";

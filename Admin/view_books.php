@@ -75,6 +75,45 @@ if (!empty($search)) {
         .search-bar button:hover {
             background-color: #2980b9;
         }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 1.1em;
+            color: #7f8c8d;
+        }
+
+        .no-results i {
+            font-size: 2em;
+            display: block;
+            margin-bottom: 10px;
+            color: #bdc3c7;
+        }
+
+        .add-book-btn {
+            padding: 8px 14px;
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .add-book-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .book-thumbnail {
+            width: 60px;
+            height: auto;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -104,30 +143,42 @@ if (!empty($search)) {
             <th>Genre</th>
             <th>Actions</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+
+        <?php if ($result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td>
+                        <img src="../<?php echo $row['image_url']; ?>" alt="<?php echo $row['title']; ?>" class="book-thumbnail">
+                    </td>
+                    <td><?php echo htmlspecialchars($row['title']); ?></td>
+                    <td><?php echo htmlspecialchars($row['author']); ?></td>
+                    <td>RM <?php echo number_format($row['price'], 2); ?></td>
+                    <td class="stock-display"><?php echo $row['stock']; ?></td>
+                    <td>
+                        <span class="genre-badge <?php echo strtolower(str_replace(' ', '-', $row['genre'])); ?>">
+                            <?php echo htmlspecialchars($row['genre']); ?>
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <a href="edit_book.php?id=<?php echo $row['id']; ?>" class="edit-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="delete_book.php?id=<?php echo $row['id']; ?>" class="delete-btn" onclick="return confirm('Are you sure you want to delete this book?');">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        <?php else: ?>
             <tr>
-                <td>
-                    <img src="../<?php echo $row['image_url']; ?>" alt="<?php echo $row['title']; ?>" class="book-thumbnail">
-                </td>
-                <td><?php echo htmlspecialchars($row['title']); ?></td>
-                <td><?php echo htmlspecialchars($row['author']); ?></td>
-                <td>RM <?php echo number_format($row['price'], 2); ?></td>
-                <td class="stock-display"><?php echo $row['stock']; ?></td>
-                <td>
-                    <span class="genre-badge <?php echo strtolower(str_replace(' ', '-', $row['genre'])); ?>">
-                        <?php echo htmlspecialchars($row['genre']); ?>
-                    </span>
-                </td>
-                <td class="actions">
-                    <a href="edit_book.php?id=<?php echo $row['id']; ?>" class="edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                    <a href="delete_book.php?id=<?php echo $row['id']; ?>" class="delete-btn" onclick="return confirm('Are you sure you want to delete this book?');">
-                        <i class="fas fa-trash"></i> Delete
-                    </a>
+                <td colspan="7">
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        No books found for "<strong><?php echo htmlspecialchars($search); ?></strong>"
+                    </div>
                 </td>
             </tr>
-        <?php endwhile; ?>
+        <?php endif; ?>
     </table>
 </div>
 </body>

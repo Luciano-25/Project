@@ -1,73 +1,61 @@
 <?php 
 include '../config.php';
 
-// Get filter for revenue grouping
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-
-// Prepare revenue SQL based on filter
-switch ($filter) {
-    case 'monthly':
-        $revenue_sql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS period, SUM(total_amount) AS total_revenue FROM orders GROUP BY period ORDER BY period DESC";
-        $label = "Monthly Revenue";
-        break;
-    case 'yearly':
-        $revenue_sql = "SELECT YEAR(created_at) AS period, SUM(total_amount) AS total_revenue FROM orders GROUP BY period ORDER BY period DESC";
-        $label = "Yearly Revenue";
-        break;
-    default:
-        $revenue_sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
-        $label = "Total Revenue";
-}
-
-// Execute revenue query
-$revenue_result = $conn->query($revenue_sql);
-
-// Get search/filter inputs
-$search_book = isset($_GET['search_book']) ? trim($_GET['search_book']) : '';
-$search_customer = isset($_GET['search_customer']) ? trim($_GET['search_customer']) : '';
+// Get filters from GET parameters
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
-// Build dynamic WHERE conditions for sales query
+// Build WHERE clause parts
 $where = [];
 $params = [];
-$types = '';
+$types = "";
 
-// Filter by book title (LIKE)
-if ($search_book !== '') {
-    $where[] = "orders.book_title LIKE ?";
-    $params[] = '%' . $search_book . '%';
-    $types .= 's';
+// Filter by book title or username (customer)
+if ($search !== '') {
+    $where[] = "(orders.book_title LIKE ? OR users.username LIKE ?)";
+    $like_search = "%" . $search . "%";
+    $params[] = $like_search;
+    $params[] = $like_search;
+    $types .= "ss";
 }
 
-// Filter by customer username (LIKE)
-if ($search_customer !== '') {
-    $where[] = "users.username LIKE ?";
-    $params[] = '%' . $search_customer . '%';
-    $types .= 's';
-}
-
-// Filter by start date (created_at >= start_date 00:00:00)
+// Filter by start date
 if ($start_date !== '') {
     $where[] = "orders.created_at >= ?";
     $params[] = $start_date . " 00:00:00";
-    $types .= 's';
+    $types .= "s";
 }
 
-// Filter by end date (created_at <= end_date 23:59:59)
+// Filter by end date
 if ($end_date !== '') {
     $where[] = "orders.created_at <= ?";
     $params[] = $end_date . " 23:59:59";
-    $types .= 's';
+    $types .= "s";
 }
 
-// Combine WHERE clauses
-$where_sql = '';
+// Combine WHERE clause
+$where_sql = "";
 if (count($where) > 0) {
-    $where_sql = 'WHERE ' . implode(' AND ', $where);
+    $where_sql = "WHERE " . implode(" AND ", $where);
 }
 
-// Sales query with filters
+// Prepare total revenue query with filters
+$revenue_sql = "SELECT SUM(orders.total_amount) AS total_revenue
+                FROM orders
+                JOIN users ON orders.user_id = users.id
+                $where_sql";
+
+$stmt = $conn->prepare($revenue_sql);
+if ($types) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$revenue_result = $stmt->get_result();
+$revenue_row = $revenue_result->fetch_assoc();
+$total_revenue_filtered = $revenue_row['total_revenue'] ?? 0;
+
+// Prepare sales query with filters
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -86,14 +74,12 @@ $sales_sql = "SELECT
             $where_sql
             ORDER BY orders.created_at DESC";
 
-// Prepare and execute statement safely
-$stmt = $conn->prepare($sales_sql);
+$stmt_sales = $conn->prepare($sales_sql);
 if ($types) {
-    $stmt->bind_param($types, ...$params);
+    $stmt_sales->bind_param($types, ...$params);
 }
-$stmt->execute();
-$sales_result = $stmt->get_result();
-
+$stmt_sales->execute();
+$sales_result = $stmt_sales->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -111,31 +97,25 @@ $sales_result = $stmt->get_result();
 
         form {
             margin-bottom: 30px;
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            align-items: center;
+            align-items: flex-end;
         }
 
         label {
             font-weight: 500;
-            margin-right: 6px;
-            white-space: nowrap;
         }
 
-        input[type="text"], input[type="date"], select {
+        input[type="text"], input[type="date"] {
             padding: 6px 10px;
             border-radius: 5px;
             border: 1px solid #ccc;
-            min-width: 150px;
+            font-size: 14px;
         }
 
         button[type="submit"] {
-            padding: 8px 20px;
+            padding: 8px 18px;
             background-color: #3498db;
             color: white;
             border: none;
@@ -201,53 +181,31 @@ $sales_result = $stmt->get_result();
 <div class="container">
     <h2>Sales Report</h2>
 
-    <!-- Revenue Filter -->
-    <form method="get" action="">
-        <label for="filter">View Revenue By:</label>
-        <select name="filter" id="filter" onchange="this.form.submit()">
-            <option value="all" <?php if($filter === 'all') echo 'selected'; ?>>All Time</option>
-            <option value="monthly" <?php if($filter === 'monthly') echo 'selected'; ?>>Monthly</option>
-            <option value="yearly" <?php if($filter === 'yearly') echo 'selected'; ?>>Yearly</option>
-        </select>
+    <!-- Search & Filter Form -->
+    <form method="get" action="view_sales.php">
+        <div>
+            <label for="search">Search (Customer or Book Title):</label><br>
+            <input type="text" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Enter customer or book title">
+        </div>
 
-        <!-- Search Inputs -->
-        <label for="search_book">Book Title:</label>
-        <input type="text" name="search_book" id="search_book" placeholder="Search book title" value="<?php echo htmlspecialchars($search_book); ?>">
+        <div>
+            <label for="start_date">Start Date:</label><br>
+            <input type="date" id="start_date" name="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
+        </div>
 
-        <label for="search_customer">Customer Name:</label>
-        <input type="text" name="search_customer" id="search_customer" placeholder="Search customer" value="<?php echo htmlspecialchars($search_customer); ?>">
+        <div>
+            <label for="end_date">End Date:</label><br>
+            <input type="date" id="end_date" name="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
+        </div>
 
-        <label for="start_date">Start Date:</label>
-        <input type="date" name="start_date" id="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
-
-        <label for="end_date">End Date:</label>
-        <input type="date" name="end_date" id="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
-
-        <button type="submit">Search</button>
+        <div>
+            <button type="submit">Search</button>
+        </div>
     </form>
 
-    <h3><?php echo $label; ?></h3>
-
-    <?php if ($filter === 'all'): ?>
-        <?php 
-        $row = $revenue_result->fetch_assoc(); 
-        $total_revenue = $row['total_revenue'] ?? 0;
-        ?>
-        <p>Total Revenue: <strong>RM <?php echo number_format($total_revenue, 2); ?></strong></p>
-    <?php else: ?>
-        <table>
-            <tr>
-                <th><?php echo $filter === 'monthly' ? 'Month' : 'Year'; ?></th>
-                <th>Total Revenue (RM)</th>
-            </tr>
-            <?php while($row = $revenue_result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['period']); ?></td>
-                    <td><?php echo number_format($row['total_revenue'], 2); ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    <?php endif; ?>
+    <!-- Filtered Total Revenue -->
+    <h3>Filtered Total Revenue:</h3>
+    <p><strong>RM <?php echo number_format($total_revenue_filtered, 2); ?></strong></p>
 
     <!-- Sales List Table -->
     <h3>Sales Transactions</h3>

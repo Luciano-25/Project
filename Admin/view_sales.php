@@ -19,7 +19,7 @@ switch ($filter) {
         $label = "Total Revenue";
 }
 
-// Updated sales query to include shipping details
+// Updated sales query to include deleted books handling
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -31,7 +31,7 @@ $sales_sql = "SELECT
                 orders.shipping_city,
                 orders.shipping_postal_code,
                 users.username,
-                books.id AS book_exists
+                IF(books.id IS NULL, 0, 1) AS book_exists
             FROM orders
             LEFT JOIN books ON orders.book_id = books.id
             JOIN users ON orders.user_id = users.id
@@ -110,6 +110,11 @@ $revenue_result = $conn->query($revenue_sql);
         .print-btn:hover {
             background-color: #2980b9;
         }
+
+        .deleted-book {
+            color: #999;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -166,8 +171,8 @@ $revenue_result = $conn->query($revenue_sql);
                 <td><?php echo htmlspecialchars($row['username']); ?></td>
                 <td>
                     <?php
-                    if (is_null($row['book_exists'])) {
-                        echo "Deleted Book (" . htmlspecialchars($row['book_title']) . ")";
+                    if (!$row['book_exists']) {
+                        echo "<span class='deleted-book'>Deleted Book (" . htmlspecialchars($row['book_title']) . ")</span>";
                     } else {
                         echo htmlspecialchars($row['book_title']);
                     }

@@ -1,50 +1,43 @@
 <?php
 include '../config.php';
 
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$search_book = isset($_GET['book']) ? trim($_GET['book']) : '';
+$results = [];
 
-$sql = "SELECT 
-            users.username,
-            orders.book_title,
-            orders.quantity,
-            orders.created_at,
-            orders.shipping_address,
-            orders.shipping_city,
-            orders.shipping_postal_code
+if (!empty($search_book)) {
+    $stmt = $conn->prepare("
+        SELECT orders.book_title, users.username, orders.shipping_address, orders.shipping_city, orders.shipping_postal_code
         FROM orders
-        JOIN users ON orders.user_id = users.id";
-
-$params = [];
-$types = "";
-$where = "";
-
-if ($search !== '') {
-    $where = " WHERE orders.book_title LIKE ?";
-    $params[] = "%" . $search . "%";
-    $types .= "s";
+        JOIN users ON orders.user_id = users.id
+        WHERE orders.book_title LIKE ?
+    ");
+    $search_term = "%{$search_book}%";
+    $stmt->bind_param("s", $search_term);
+    $stmt->execute();
+    $results = $stmt->get_result();
 }
-
-$query = $sql . $where . " ORDER BY orders.created_at DESC";
-$stmt = $conn->prepare($query);
-
-if ($types !== '') {
-    $stmt->bind_param($types, ...$params);
-}
-
-$stmt->execute();
-$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Book Purchase Report - BookHaven</title>
+    <title>Customers by Book - BookHaven</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+
         h2 {
-            margin-bottom: 20px;
             color: #2c3e50;
+            margin-bottom: 20px;
         }
 
         form {
@@ -52,18 +45,19 @@ $result = $stmt->get_result();
         }
 
         input[type="text"] {
-            padding: 7px;
-            border-radius: 5px;
+            padding: 10px;
+            width: 60%;
+            border-radius: 8px;
             border: 1px solid #ccc;
-            width: 300px;
+            margin-right: 10px;
         }
 
         button {
-            padding: 7px 15px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
             background-color: #3498db;
             color: white;
-            border: none;
-            border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
         }
@@ -75,70 +69,77 @@ $result = $stmt->get_result();
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: #fff;
+            background: #fff;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid #ddd;
+            text-align: left;
         }
 
         th {
             background-color: #2c3e50;
-            color: white;
+            color: #fff;
         }
 
         tr:hover {
-            background-color: #f1f1f1;
+            background-color: #f9f9f9;
         }
 
-        .container {
-            padding: 20px;
+        .back-btn {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #95a5a6;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            background-color: #7f8c8d;
         }
     </style>
 </head>
 <body>
-<?php include 'admin_header.php'; ?>
 <div class="container">
-    <h2>Search Customers by Book</h2>
-    <form method="get" action="">
-        <input type="text" name="search" placeholder="Enter book title" value="<?php echo htmlspecialchars($search); ?>">
+    <h2>View Customers Who Purchased a Book</h2>
+
+    <form method="get">
+        <input type="text" name="book" placeholder="Enter book title" value="<?php echo htmlspecialchars($search_book); ?>">
         <button type="submit">Search</button>
     </form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Customer</th>
-                <th>Book Title</th>
-                <th>Quantity</th>
-                <th>Purchase Date</th>
-                <th>Address</th>
-                <th>City</th>
-                <th>Postal Code</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php if ($result->num_rows > 0): ?>
-            <?php while ($row = $result->fetch_assoc()): ?>
+    <?php if (!empty($search_book)): ?>
+        <h3>Results for "<?php echo htmlspecialchars($search_book); ?>"</h3>
+        <?php if ($results->num_rows > 0): ?>
+            <table>
                 <tr>
-                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                    <td><?php echo htmlspecialchars($row['book_title']); ?></td>
-                    <td><?php echo $row['quantity']; ?></td>
-                    <td><?php echo date('d M Y, h:i A', strtotime($row['created_at'])); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
+                    <th>Customer</th>
+                    <th>Shipping Address</th>
+                    <th>City</th>
+                    <th>Postal Code</th>
                 </tr>
-            <?php endwhile; ?>
+                <?php while ($row = $results->fetch_assoc()): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['username']); ?></td>
+                        <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
+                        <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
+                        <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </table>
         <?php else: ?>
-            <tr><td colspan="7">No results found.</td></tr>
+            <p>No customers found for that book.</p>
         <?php endif; ?>
-        </tbody>
-    </table>
+    <?php endif; ?>
+
+    <a href="view_sales.php" class="back-btn">← Back to Sales Report</a>
 </div>
 </body>
 </html>

@@ -1,61 +1,7 @@
 <?php 
 include '../config.php';
 
-// Get filters from GET parameters
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
-
-// Build WHERE clause parts
-$where = [];
-$params = [];
-$types = "";
-
-// Filter by book title or username (customer)
-if ($search !== '') {
-    $where[] = "(orders.book_title LIKE ? OR users.username LIKE ?)";
-    $like_search = "%" . $search . "%";
-    $params[] = $like_search;
-    $params[] = $like_search;
-    $types .= "ss";
-}
-
-// Filter by start date
-if ($start_date !== '') {
-    $where[] = "orders.created_at >= ?";
-    $params[] = $start_date . " 00:00:00";
-    $types .= "s";
-}
-
-// Filter by end date
-if ($end_date !== '') {
-    $where[] = "orders.created_at <= ?";
-    $params[] = $end_date . " 23:59:59";
-    $types .= "s";
-}
-
-// Combine WHERE clause
-$where_sql = "";
-if (count($where) > 0) {
-    $where_sql = "WHERE " . implode(" AND ", $where);
-}
-
-// Prepare total revenue query with filters
-$revenue_sql = "SELECT SUM(orders.total_amount) AS total_revenue
-                FROM orders
-                JOIN users ON orders.user_id = users.id
-                $where_sql";
-
-$stmt = $conn->prepare($revenue_sql);
-if ($types) {
-    $stmt->bind_param($types, ...$params);
-}
-$stmt->execute();
-$revenue_result = $stmt->get_result();
-$revenue_row = $revenue_result->fetch_assoc();
-$total_revenue_filtered = $revenue_row['total_revenue'] ?? 0;
-
-// Prepare sales query with filters
+// Fetch all sales
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -71,15 +17,15 @@ $sales_sql = "SELECT
             FROM orders
             LEFT JOIN books ON orders.book_id = books.id
             JOIN users ON orders.user_id = users.id
-            $where_sql
             ORDER BY orders.created_at DESC";
 
-$stmt_sales = $conn->prepare($sales_sql);
-if ($types) {
-    $stmt_sales->bind_param($types, ...$params);
-}
-$stmt_sales->execute();
-$sales_result = $stmt_sales->get_result();
+$sales_result = $conn->query($sales_sql);
+
+// Total revenue calculation
+$revenue_sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
+$revenue_result = $conn->query($revenue_sql);
+$revenue_row = $revenue_result->fetch_assoc();
+$total_revenue = $revenue_row['total_revenue'];
 ?>
 
 <!DOCTYPE html>
@@ -93,40 +39,6 @@ $sales_result = $stmt_sales->get_result();
             margin-top: 30px;
             margin-bottom: 20px;
             color: #2c3e50;
-        }
-
-        form {
-            margin-bottom: 30px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-end;
-        }
-
-        label {
-            font-weight: 500;
-        }
-
-        input[type="text"], input[type="date"] {
-            padding: 6px 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-
-        button[type="submit"] {
-            padding: 8px 18px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #2980b9;
         }
 
         table {
@@ -154,7 +66,7 @@ $sales_result = $stmt_sales->get_result();
             background-color: #f2f2f2;
         }
 
-        .print-btn {
+        .print-btn, .report-link-btn {
             padding: 10px 20px;
             background-color: #3498db;
             color: white;
@@ -162,11 +74,22 @@ $sales_result = $stmt_sales->get_result();
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
             transition: background-color 0.3s ease;
         }
 
-        .print-btn:hover {
+        .print-btn:hover, .report-link-btn:hover {
             background-color: #2980b9;
+        }
+
+        .report-link-btn {
+            background-color: #27ae60;
+        }
+
+        .report-link-btn:hover {
+            background-color: #1e8449;
         }
 
         .deleted-book {
@@ -181,33 +104,9 @@ $sales_result = $stmt_sales->get_result();
 <div class="container">
     <h2>Sales Report</h2>
 
-    <!-- Search & Filter Form -->
-    <form method="get" action="view_sales.php">
-        <div>
-            <label for="search">Search (Customer or Book Title):</label><br>
-            <input type="text" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Enter customer or book title">
-        </div>
+    <h3>Total Revenue</h3>
+    <p><strong>RM <?php echo number_format($total_revenue, 2); ?></strong></p>
 
-        <div>
-            <label for="start_date">Start Date:</label><br>
-            <input type="date" id="start_date" name="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
-        </div>
-
-        <div>
-            <label for="end_date">End Date:</label><br>
-            <input type="date" id="end_date" name="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
-        </div>
-
-        <div>
-            <button type="submit">Search</button>
-        </div>
-    </form>
-
-    <!-- Filtered Total Revenue -->
-    <h3>Filtered Total Revenue:</h3>
-    <p><strong>RM <?php echo number_format($total_revenue_filtered, 2); ?></strong></p>
-
-    <!-- Sales List Table -->
     <h3>Sales Transactions</h3>
     <table>
         <tr>
@@ -242,7 +141,9 @@ $sales_result = $stmt_sales->get_result();
         <?php endwhile; ?>
     </table>
 
-    <button class="print-btn" onclick="window.print()">Print Report</button>
+    <button class="print-btn" onclick="window.print()">Print Report</button><br><br>
+
+    <a href="book_customers.php" class="report-link-btn">View Customers by Book</a>
 </div>
 </body>
 </html>

@@ -19,12 +19,8 @@ if (isset($_GET['id'])) {
             unlink($image_path);
         }
     }
-    
-    // Delete related orders
-    $delete_orders = "DELETE FROM orders WHERE book_id = ?";
-    $stmt = $conn->prepare($delete_orders);
-    $stmt->bind_param("i", $book_id);
-    $stmt->execute();
+
+    // ✅ Do NOT delete orders — let book_id become NULL
     
     // Delete the book
     $delete_book = "DELETE FROM books WHERE id = ?";

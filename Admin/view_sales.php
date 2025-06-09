@@ -19,7 +19,7 @@ switch ($filter) {
         $label = "Total Revenue";
 }
 
-// Updated sales query to include deleted books handling
+// Fixed query to show all sales even if book is deleted
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -38,8 +38,6 @@ $sales_sql = "SELECT
             ORDER BY orders.created_at DESC";
 
 $sales_result = $conn->query($sales_sql);
-
-// Revenue query
 $revenue_result = $conn->query($revenue_sql);
 ?>
 

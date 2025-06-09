@@ -1,10 +1,22 @@
 <?php
 include '../config.php';
 
-$sql = "SELECT books.id, books.title, books.author, books.price, books.stock, books.image_url, books.genre 
-        FROM books 
-        ORDER BY books.id DESC";
-$result = $conn->query($sql);
+// Handle search input
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+$sql = "SELECT id, title, author, price, stock, image_url, genre FROM books";
+
+if (!empty($search)) {
+    $sql .= " WHERE title LIKE ? OR author LIKE ? OR genre LIKE ? ORDER BY id DESC";
+    $stmt = $conn->prepare($sql);
+    $like = '%' . $search . '%';
+    $stmt->bind_param("sss", $like, $like, $like);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $sql .= " ORDER BY id DESC";
+    $result = $conn->query($sql);
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,6 +49,32 @@ $result = $conn->query($sql);
         .genre-badge.biography { background-color: #27ae60; }
         .genre-badge.history { background-color: #7f8c8d; }
         .genre-badge.cookbook { background-color: #d35400; }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input[type="text"] {
+            padding: 8px 14px;
+            width: 280px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .search-bar button {
+            padding: 8px 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .search-bar button:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -49,6 +87,12 @@ $result = $conn->query($sql);
             <i class="fas fa-plus"></i> Add New Book
         </a>
     </div>
+
+    <!-- Search Form -->
+    <form method="get" class="search-bar">
+        <input type="text" name="search" placeholder="Search by title, author, or genre" value="<?php echo htmlspecialchars($search); ?>">
+        <button type="submit">Search</button>
+    </form>
 
     <table>
         <tr>
@@ -65,8 +109,8 @@ $result = $conn->query($sql);
                 <td>
                     <img src="../<?php echo $row['image_url']; ?>" alt="<?php echo $row['title']; ?>" class="book-thumbnail">
                 </td>
-                <td><?php echo $row['title']; ?></td>
-                <td><?php echo $row['author']; ?></td>
+                <td><?php echo htmlspecialchars($row['title']); ?></td>
+                <td><?php echo htmlspecialchars($row['author']); ?></td>
                 <td>RM <?php echo number_format($row['price'], 2); ?></td>
                 <td class="stock-display"><?php echo $row['stock']; ?></td>
                 <td>

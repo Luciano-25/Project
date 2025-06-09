@@ -26,23 +26,6 @@ $staff_picks = $conn->query($sql_staff);
 <body>
 <?php include 'admin_header.php'; ?>
 
-<?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin'): ?>
-  <div style="padding: 15px; max-width: 1200px; margin: 20px auto; text-align: right;">
-    <a href="admin_dashboard.php" style="
-        background-color: #2c3e50;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: background-color 0.3s ease;"
-        onmouseover="this.style.backgroundColor='#34495e'" 
-        onmouseout="this.style.backgroundColor='#2c3e50'">
-      ← Back to Admin Dashboard
-    </a>
-  </div>
-<?php endif; ?>
-
 <main>
   <!-- Hero Section -->
   <section class="hero">
@@ -67,7 +50,7 @@ $staff_picks = $conn->query($sql_staff);
         <?php while ($book = $new_arrivals->fetch_assoc()): ?>
           <div class="book-card">
             <a href="../book_details.php?id=<?php echo $book['id']; ?>">
-              <img src="/<?php echo htmlspecialchars($book['image_url']); ?>" alt="<?php echo htmlspecialchars($book['title']); ?>">
+              <img src="<?php echo htmlspecialchars($book['image_url']); ?>" alt="<?php echo htmlspecialchars($book['title']); ?>">
               <div class="book-info">
                 <h3 class="book-title"><?php echo $book['title']; ?></h3>
                 <p class="book-author">by <?php echo $book['author']; ?></p>

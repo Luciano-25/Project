@@ -1,63 +1,47 @@
 <?php 
 include '../config.php';
 
-// Get filter inputs from GET parameters safely
-$book_title_filter = isset($_GET['book_title']) ? trim($_GET['book_title']) : '';
-$customer_filter = isset($_GET['customer']) ? trim($_GET['customer']) : '';
-$specific_date = isset($_GET['specific_date']) ? trim($_GET['specific_date']) : '';
+// Initialize variables for search
+$customer_name = isset($_GET['customer_name']) ? trim($_GET['customer_name']) : '';
+$book_title = isset($_GET['book_title']) ? trim($_GET['book_title']) : '';
 $start_date = isset($_GET['start_date']) ? trim($_GET['start_date']) : '';
 $end_date = isset($_GET['end_date']) ? trim($_GET['end_date']) : '';
 
-// Build dynamic WHERE clauses based on filters
-$whereClauses = [];
+// Build WHERE conditions and params
+$where = [];
 $params = [];
 $types = '';
 
-// Book Title filter
-if ($book_title_filter !== '') {
-    $whereClauses[] = "orders.book_title LIKE ?";
-    $params[] = "%" . $book_title_filter . "%";
+if ($customer_name !== '') {
+    $where[] = "users.username LIKE ?";
+    $params[] = "%" . $customer_name . "%";
     $types .= 's';
 }
 
-// Customer filter (username)
-if ($customer_filter !== '') {
-    $whereClauses[] = "users.username LIKE ?";
-    $params[] = "%" . $customer_filter . "%";
+if ($book_title !== '') {
+    $where[] = "orders.book_title LIKE ?";
+    $params[] = "%" . $book_title . "%";
     $types .= 's';
 }
 
-// Date filters
-if ($specific_date !== '') {
-    // Filter by exact date (ignoring time)
-    $whereClauses[] = "DATE(orders.sale_date) = ?";
-    $params[] = $specific_date;
+if ($start_date !== '') {
+    $where[] = "orders.sale_date >= ?";
+    $params[] = $start_date . " 00:00:00";
     $types .= 's';
-} else {
-    // Filter by date range if both start and end dates provided
-    if ($start_date !== '' && $end_date !== '') {
-        $whereClauses[] = "DATE(orders.sale_date) BETWEEN ? AND ?";
-        $params[] = $start_date;
-        $params[] = $end_date;
-        $types .= 'ss';
-    } elseif ($start_date !== '') {
-        $whereClauses[] = "DATE(orders.sale_date) >= ?";
-        $params[] = $start_date;
-        $types .= 's';
-    } elseif ($end_date !== '') {
-        $whereClauses[] = "DATE(orders.sale_date) <= ?";
-        $params[] = $end_date;
-        $types .= 's';
-    }
 }
 
-// Combine WHERE clauses
+if ($end_date !== '') {
+    $where[] = "orders.sale_date <= ?";
+    $params[] = $end_date . " 23:59:59";
+    $types .= 's';
+}
+
 $whereSql = '';
-if (count($whereClauses) > 0) {
-    $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+if (count($where) > 0) {
+    $whereSql = 'WHERE ' . implode(' AND ', $where);
 }
 
-// Prepare sales query with filters
+// Sales query with joins and filter
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -76,26 +60,32 @@ $sales_sql = "SELECT
             $whereSql
             ORDER BY orders.sale_date DESC";
 
-// Prepare total sales sum query with same filters
-$total_sales_sql = "SELECT SUM(total_amount) AS total_sales FROM orders $whereSql";
-
 $sales_stmt = $conn->prepare($sales_sql);
-$total_stmt = $conn->prepare($total_sales_sql);
 
-// Bind params dynamically if needed
 if (!empty($params)) {
     $sales_stmt->bind_param($types, ...$params);
-    $total_stmt->bind_param($types, ...$params);
 }
 
 $sales_stmt->execute();
 $sales_result = $sales_stmt->get_result();
 
+// Total sales amount query with joins and filter (FIXED here)
+$total_sales_sql = "SELECT SUM(orders.total_amount) AS total_sales 
+                    FROM orders 
+                    LEFT JOIN books ON orders.book_id = books.id
+                    JOIN users ON orders.user_id = users.id
+                    $whereSql";
+
+$total_stmt = $conn->prepare($total_sales_sql);
+
+if (!empty($params)) {
+    $total_stmt->bind_param($types, ...$params);
+}
+
 $total_stmt->execute();
 $total_result = $total_stmt->get_result();
 $total_row = $total_result->fetch_assoc();
 $total_sales = $total_row['total_sales'] ?? 0;
-
 ?>
 
 <!DOCTYPE html>
@@ -105,43 +95,47 @@ $total_sales = $total_row['total_sales'] ?? 0;
     <title>Sales Report - BookHaven</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
-        /* Keep your existing styles and add some for the new form */
-        form.filter-form {
+        h2, h3 {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        form {
             margin-bottom: 30px;
             background: #fff;
-            padding: 15px 20px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
         }
-        form.filter-form label {
-            font-weight: 600;
-            margin-right: 8px;
+
+        label {
+            font-weight: 500;
+            margin-right: 10px;
         }
-        form.filter-form input[type="text"],
-        form.filter-form input[type="date"] {
+
+        input[type="text"], input[type="date"] {
             padding: 6px 10px;
-            border-radius: 6px;
+            border-radius: 5px;
             border: 1px solid #ccc;
-            min-width: 180px;
+            margin-right: 15px;
         }
-        form.filter-form button {
+
+        button.search-btn {
             background-color: #3498db;
-            color: #fff;
+            color: white;
             border: none;
+            padding: 8px 15px;
             border-radius: 8px;
-            padding: 10px 18px;
             cursor: pointer;
             font-weight: bold;
             transition: background-color 0.3s ease;
-            align-self: center;
         }
-        form.filter-form button:hover {
+
+        button.search-btn:hover {
             background-color: #2980b9;
         }
-        /* Your existing table styles below */
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -151,26 +145,47 @@ $total_sales = $total_row['total_sales'] ?? 0;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
+
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid #ddd;
             text-align: left;
         }
+
         th {
             background-color: #2c3e50;
             color: #fff;
         }
+
         tr:hover {
             background-color: #f2f2f2;
         }
+
+        .print-btn {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .print-btn:hover {
+            background-color: #2980b9;
+        }
+
         .deleted-book {
             color: #999;
             font-style: italic;
         }
+
         .total-sales {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #27ae60;
         }
     </style>
 </head>
@@ -180,39 +195,23 @@ $total_sales = $total_row['total_sales'] ?? 0;
 <div class="container">
     <h2>Sales Report</h2>
 
-    <!-- New Search Filter Form -->
-    <form method="get" class="filter-form">
-        <div>
-            <label for="book_title">Book Title:</label>
-            <input type="text" id="book_title" name="book_title" value="<?php echo htmlspecialchars($book_title_filter); ?>" placeholder="Search by book title">
-        </div>
+    <!-- Search form -->
+    <form method="get" action="">
+        <label for="customer_name">Customer Name:</label>
+        <input type="text" name="customer_name" id="customer_name" value="<?php echo htmlspecialchars($customer_name); ?>" placeholder="Enter customer name">
 
-        <div>
-            <label for="customer">Customer:</label>
-            <input type="text" id="customer" name="customer" value="<?php echo htmlspecialchars($customer_filter); ?>" placeholder="Search by customer name">
-        </div>
+        <label for="book_title">Book Title:</label>
+        <input type="text" name="book_title" id="book_title" value="<?php echo htmlspecialchars($book_title); ?>" placeholder="Enter book title">
 
-        <div>
-            <label for="specific_date">Specific Date:</label>
-            <input type="date" id="specific_date" name="specific_date" value="<?php echo htmlspecialchars($specific_date); ?>">
-        </div>
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
 
-        <div>
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" value="<?php echo htmlspecialchars($start_date); ?>">
-        </div>
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
 
-        <div>
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" value="<?php echo htmlspecialchars($end_date); ?>">
-        </div>
-
-        <div>
-            <button type="submit">Search</button>
-        </div>
+        <button type="submit" class="search-btn">Search</button>
     </form>
 
-    <!-- Total Sales Display -->
     <div class="total-sales">
         Total Sales Amount: RM <?php echo number_format($total_sales, 2); ?>
     </div>
@@ -232,34 +231,31 @@ $total_sales = $total_row['total_sales'] ?? 0;
         </tr>
         </thead>
         <tbody>
-        <?php if ($sales_result->num_rows === 0): ?>
-            <tr><td colspan="8" style="text-align:center; font-style: italic; color: #666;">No records found.</td></tr>
-        <?php else: ?>
-            <?php while ($row = $sales_result->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['username']); ?></td>
-                    <td>
-                        <?php
-                        if (!$row['book_exists']) {
-                            echo "<span class='deleted-book'>Deleted Book (" . htmlspecialchars($row['book_title']) . ")</span>";
-                        } else {
-                            echo htmlspecialchars($row['book_title']);
-                        }
-                        ?>
-                    </td>
-                    <td><?php echo $row['quantity']; ?></td>
-                    <td><?php echo number_format($row['total_amount'], 2); ?></td>
-                    <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
-                    <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
-                </tr>
-            <?php endwhile; ?>
-        <?php endif; ?>
+        <?php while ($row = $sales_result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                <td>
+                    <?php
+                    if (!$row['book_exists']) {
+                        echo "<span class='deleted-book'>Deleted Book (" . htmlspecialchars($row['book_title']) . ")</span>";
+                    } else {
+                        echo htmlspecialchars($row['book_title']);
+                    }
+                    ?>
+                </td>
+                <td><?php echo (int)$row['quantity']; ?></td>
+                <td><?php echo number_format($row['total_amount'], 2); ?></td>
+                <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
+                <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
+            </tr>
+        <?php endwhile; ?>
         </tbody>
     </table>
 
     <button class="print-btn" onclick="window.print()">Print Report</button>
 </div>
+
 </body>
 </html>

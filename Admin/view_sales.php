@@ -193,8 +193,6 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
 
     <button class="btn print-btn" onclick="window.print()">Print Report</button><br><br>
 
-    <a href="book_customers.php" class="btn report-link-btn">View Customers by Book</a>
-    <a href="admin_dashboard.php" class="btn back-btn">Back to Dashboard</a>
 </div>
 </body>
 </html>

@@ -116,10 +116,6 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         }
         .print-btn { background-color: #3498db; }
         .print-btn:hover { background-color: #2980b9; }
-        .report-link-btn { background-color: #27ae60; }
-        .report-link-btn:hover { background-color: #1e8449; }
-        .back-btn { background-color: #7f8c8d; }
-        .back-btn:hover { background-color: #636e72; }
         .filter-form input {
             padding: 6px;
             margin-right: 10px;
@@ -129,6 +125,25 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         .deleted-book {
             color: #999;
             font-style: italic;
+        }
+
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .print-btn, .filter-form {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -142,6 +157,7 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
     <form method="get" class="filter-form">
         <input type="text" name="username" placeholder="Search by customer" value="<?= htmlspecialchars($search_username) ?>">
         <input type="text" name="book_title" placeholder="Search by book title" value="<?= htmlspecialchars($search_book) ?>">
+
         <label for="date">Specific Date:</label>
         <input type="date" name="date" id="date" value="<?= htmlspecialchars($search_date) ?>">
 
@@ -154,45 +170,47 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         <button type="submit" class="btn print-btn">Filter</button>
     </form>
 
-    <h3>Total Revenue</h3>
-    <p><strong>RM <?= number_format($total_revenue, 2); ?></strong></p>
+    <!-- Wrap print area -->
+    <div class="print-area">
+        <h3>Total Revenue</h3>
+        <p><strong>RM <?= number_format($total_revenue, 2); ?></strong></p>
 
-    <h3>Sales Transactions</h3>
-    <table>
-        <tr>
-            <th>Customer</th>
-            <th>Book Title</th>
-            <th>Quantity</th>
-            <th>Total Amount (RM)</th>
-            <th>Sale Date</th>
-            <th>Shipping Address</th>
-            <th>City</th>
-            <th>Postal Code</th>
-        </tr>
-        <?php while ($row = $sales_result->fetch_assoc()): ?>
+        <h3>Sales Transactions</h3>
+        <table>
             <tr>
-                <td><?= htmlspecialchars($row['username']) ?></td>
-                <td>
-                    <?php
-                    if (!$row['book_exists']) {
-                        echo "<span class='deleted-book'>Deleted Book (" . htmlspecialchars($row['book_title']) . ")</span>";
-                    } else {
-                        echo htmlspecialchars($row['book_title']);
-                    }
-                    ?>
-                </td>
-                <td><?= $row['quantity'] ?></td>
-                <td><?= number_format($row['total_amount'], 2) ?></td>
-                <td><?= date('d M Y, h:i A', strtotime($row['sale_date'])) ?></td>
-                <td><?= htmlspecialchars($row['shipping_address']) ?></td>
-                <td><?= htmlspecialchars($row['shipping_city']) ?></td>
-                <td><?= htmlspecialchars($row['shipping_postal_code']) ?></td>
+                <th>Customer</th>
+                <th>Book Title</th>
+                <th>Quantity</th>
+                <th>Total Amount (RM)</th>
+                <th>Sale Date</th>
+                <th>Shipping Address</th>
+                <th>City</th>
+                <th>Postal Code</th>
             </tr>
-        <?php endwhile; ?>
-    </table>
+            <?php while ($row = $sales_result->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['username']) ?></td>
+                    <td>
+                        <?php
+                        if (!$row['book_exists']) {
+                            echo "<span class='deleted-book'>Deleted Book (" . htmlspecialchars($row['book_title']) . ")</span>";
+                        } else {
+                            echo htmlspecialchars($row['book_title']);
+                        }
+                        ?>
+                    </td>
+                    <td><?= $row['quantity'] ?></td>
+                    <td><?= number_format($row['total_amount'], 2) ?></td>
+                    <td><?= date('d M Y, h:i A', strtotime($row['sale_date'])) ?></td>
+                    <td><?= htmlspecialchars($row['shipping_address']) ?></td>
+                    <td><?= htmlspecialchars($row['shipping_city']) ?></td>
+                    <td><?= htmlspecialchars($row['shipping_postal_code']) ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    </div>
 
     <button class="btn print-btn" onclick="window.print()">Print Report</button><br><br>
-
 </div>
 </body>
 </html>

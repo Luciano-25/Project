@@ -1,7 +1,43 @@
 <?php 
 include '../config.php';
 
-// Fetch all sales
+// Initialize filter values
+$search_username = $_GET['username'] ?? '';
+$search_book = $_GET['book_title'] ?? '';
+$search_date = $_GET['date'] ?? '';
+$search_start = $_GET['start_date'] ?? '';
+$search_end = $_GET['end_date'] ?? '';
+
+// Build dynamic WHERE clause
+$conditions = [];
+$params = [];
+$types = '';
+
+if ($search_username) {
+    $conditions[] = 'users.username LIKE ?';
+    $params[] = "%$search_username%";
+    $types .= 's';
+}
+if ($search_book) {
+    $conditions[] = 'orders.book_title LIKE ?';
+    $params[] = "%$search_book%";
+    $types .= 's';
+}
+if ($search_date) {
+    $conditions[] = 'DATE(orders.created_at) = ?';
+    $params[] = $search_date;
+    $types .= 's';
+}
+if ($search_start && $search_end) {
+    $conditions[] = 'DATE(orders.created_at) BETWEEN ? AND ?';
+    $params[] = $search_start;
+    $params[] = $search_end;
+    $types .= 'ss';
+}
+
+$where_sql = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+// Sales query
 $sales_sql = "SELECT 
                 orders.id,
                 orders.book_id,
@@ -17,15 +53,30 @@ $sales_sql = "SELECT
             FROM orders
             LEFT JOIN books ON orders.book_id = books.id
             JOIN users ON orders.user_id = users.id
+            $where_sql
             ORDER BY orders.created_at DESC";
 
-$sales_result = $conn->query($sales_sql);
+$stmt = $conn->prepare($sales_sql);
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$sales_result = $stmt->get_result();
 
-// Total revenue calculation
-$revenue_sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
-$revenue_result = $conn->query($revenue_sql);
+// Revenue query
+$revenue_sql = "SELECT SUM(orders.total_amount) AS total_revenue
+                FROM orders
+                JOIN users ON orders.user_id = users.id
+                $where_sql";
+
+$rev_stmt = $conn->prepare($revenue_sql);
+if ($params) {
+    $rev_stmt->bind_param($types, ...$params);
+}
+$rev_stmt->execute();
+$revenue_result = $rev_stmt->get_result();
 $revenue_row = $revenue_result->fetch_assoc();
-$total_revenue = $revenue_row['total_revenue'];
+$total_revenue = $revenue_row['total_revenue'] ?? 0.00;
 ?>
 
 <!DOCTYPE html>
@@ -35,12 +86,7 @@ $total_revenue = $revenue_row['total_revenue'];
     <title>Sales Report - BookHaven</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
-        h2, h3 {
-            margin-top: 30px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
+        h2, h3 { margin-top: 30px; margin-bottom: 20px; color: #2c3e50; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -50,48 +96,36 @@ $total_revenue = $revenue_row['total_revenue'];
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
-
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid #ddd;
             text-align: left;
         }
-
-        th {
-            background-color: #2c3e50;
-            color: #fff;
-        }
-
-        tr:hover {
-            background-color: #f2f2f2;
-        }
-
-        .print-btn, .report-link-btn {
+        th { background-color: #2c3e50; color: #fff; }
+        tr:hover { background-color: #f2f2f2; }
+        .btn {
             padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            color: white;
             text-decoration: none;
-            display: inline-block;
             margin-top: 10px;
-            transition: background-color 0.3s ease;
+            display: inline-block;
         }
-
-        .print-btn:hover, .report-link-btn:hover {
-            background-color: #2980b9;
+        .print-btn { background-color: #3498db; }
+        .print-btn:hover { background-color: #2980b9; }
+        .report-link-btn { background-color: #27ae60; }
+        .report-link-btn:hover { background-color: #1e8449; }
+        .back-btn { background-color: #7f8c8d; }
+        .back-btn:hover { background-color: #636e72; }
+        .filter-form input {
+            padding: 6px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
-
-        .report-link-btn {
-            background-color: #27ae60;
-        }
-
-        .report-link-btn:hover {
-            background-color: #1e8449;
-        }
-
         .deleted-book {
             color: #999;
             font-style: italic;
@@ -104,8 +138,18 @@ $total_revenue = $revenue_row['total_revenue'];
 <div class="container">
     <h2>Sales Report</h2>
 
+    <!-- Filter Form -->
+    <form method="get" class="filter-form">
+        <input type="text" name="username" placeholder="Search by customer" value="<?= htmlspecialchars($search_username) ?>">
+        <input type="text" name="book_title" placeholder="Search by book title" value="<?= htmlspecialchars($search_book) ?>">
+        <input type="date" name="date" value="<?= htmlspecialchars($search_date) ?>">
+        <input type="date" name="start_date" value="<?= htmlspecialchars($search_start) ?>">
+        <input type="date" name="end_date" value="<?= htmlspecialchars($search_end) ?>">
+        <button type="submit" class="btn print-btn">Filter</button>
+    </form>
+
     <h3>Total Revenue</h3>
-    <p><strong>RM <?php echo number_format($total_revenue, 2); ?></strong></p>
+    <p><strong>RM <?= number_format($total_revenue, 2); ?></strong></p>
 
     <h3>Sales Transactions</h3>
     <table>
@@ -121,7 +165,7 @@ $total_revenue = $revenue_row['total_revenue'];
         </tr>
         <?php while ($row = $sales_result->fetch_assoc()): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                <td><?= htmlspecialchars($row['username']) ?></td>
                 <td>
                     <?php
                     if (!$row['book_exists']) {
@@ -131,19 +175,20 @@ $total_revenue = $revenue_row['total_revenue'];
                     }
                     ?>
                 </td>
-                <td><?php echo $row['quantity']; ?></td>
-                <td><?php echo number_format($row['total_amount'], 2); ?></td>
-                <td><?php echo date('d M Y, h:i A', strtotime($row['sale_date'])); ?></td>
-                <td><?php echo htmlspecialchars($row['shipping_address']); ?></td>
-                <td><?php echo htmlspecialchars($row['shipping_city']); ?></td>
-                <td><?php echo htmlspecialchars($row['shipping_postal_code']); ?></td>
+                <td><?= $row['quantity'] ?></td>
+                <td><?= number_format($row['total_amount'], 2) ?></td>
+                <td><?= date('d M Y, h:i A', strtotime($row['sale_date'])) ?></td>
+                <td><?= htmlspecialchars($row['shipping_address']) ?></td>
+                <td><?= htmlspecialchars($row['shipping_city']) ?></td>
+                <td><?= htmlspecialchars($row['shipping_postal_code']) ?></td>
             </tr>
         <?php endwhile; ?>
     </table>
 
-    <button class="print-btn" onclick="window.print()">Print Report</button><br><br>
+    <button class="btn print-btn" onclick="window.print()">Print Report</button><br><br>
 
-    <a href="book_customers.php" class="report-link-btn">View Customers by Book</a>
+    <a href="book_customers.php" class="btn report-link-btn">View Customers by Book</a>
+    <a href="admin_dashboard.php" class="btn back-btn">Back to Dashboard</a>
 </div>
 </body>
 </html>

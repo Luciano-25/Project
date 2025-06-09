@@ -142,9 +142,15 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
     <form method="get" class="filter-form">
         <input type="text" name="username" placeholder="Search by customer" value="<?= htmlspecialchars($search_username) ?>">
         <input type="text" name="book_title" placeholder="Search by book title" value="<?= htmlspecialchars($search_book) ?>">
-        <input type="date" name="date" value="<?= htmlspecialchars($search_date) ?>">
-        <input type="date" name="start_date" value="<?= htmlspecialchars($search_start) ?>">
-        <input type="date" name="end_date" value="<?= htmlspecialchars($search_end) ?>">
+        <label for="date">Specific Date:</label>
+        <input type="date" name="date" id="date" value="<?= htmlspecialchars($search_date) ?>">
+
+        <label for="start_date">From:</label>
+        <input type="date" name="start_date" id="start_date" value="<?= htmlspecialchars($search_start) ?>">
+
+        <label for="end_date">To:</label>
+        <input type="date" name="end_date" id="end_date" value="<?= htmlspecialchars($search_end) ?>">
+
         <button type="submit" class="btn print-btn">Filter</button>
     </form>
 

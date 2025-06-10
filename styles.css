@@ -1326,6 +1326,19 @@ a.stat-link:hover .stat-card {
     transition: background-color 0.3s ease;
 }
 
+.card-icons i {
+    opacity: 0.3;
+    font-size: 1.5rem;
+    margin-right: 10px;
+    transition: opacity 0.3s ease;
+}
+
+.card-icons i.active {
+    opacity: 1;
+    color: #007bff;
+}
+
+
 
 
 

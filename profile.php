@@ -16,7 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['m
     $update = $conn->prepare("UPDATE orders SET status = 'Order Completed' WHERE id = ? AND user_id = ?");
     $update->bind_param("ii", $order_id, $user_id);
     $update->execute();
+
+    $_SESSION['message'] = "Order marked as received successfully!";
+    header("Location: profile.php");
+    exit();
 }
+
 
 // Fetch user data
 $sql = "SELECT *, DATE_FORMAT(created_at, '%M %Y') as member_since FROM users WHERE id = ?";
@@ -105,6 +110,12 @@ $orders = $stmt->get_result();
     </div>
 
     <div class="profile-content">
+        <?php if (isset($_SESSION['message'])): ?>
+            <div class="success-message" style="padding: 10px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 5px;">
+        <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="profile-section">
             <h2>Personal Information</h2>
             <div class="info-grid">

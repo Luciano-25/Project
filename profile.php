@@ -125,9 +125,10 @@ $orders = $stmt->get_result();
                     <?php while($order = $orders->fetch_assoc()): ?>
                         <div class="order-card">
                             <div class="order-header" onclick="toggleDetails(this)">
-                                <span>Order #<?php echo $order['id']; ?></span>
-                                <span><?php echo date('M d, Y', strtotime($order['created_at'])); ?></span>
+                                 <span><?php echo htmlspecialchars($order['book_title']); ?></span>
+                                 <span><?php echo date('M d, Y', strtotime($order['created_at'])); ?></span>
                             </div>
+
                             <div class="order-details">
                                 <p><strong>Book Title:</strong> <?php echo htmlspecialchars($order['book_title']); ?></p>
                                 <p><strong>Quantity:</strong> <?php echo $order['quantity']; ?></p>

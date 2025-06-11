@@ -38,22 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param(
-            "iisd ddssssss",
-            $user_id,                  // i
-            $book_id,                  // i
-            $book_title,               // s
-            $quantity,                 // i
-            $unit_price,               // d
-            $total_price,              // d
-            $total_price,              // d
-            $status,                   // s
-            $shipping_address,         // s
-            $shipping_city,            // s
-            $shipping_postal_code,     // s
-            $full_name,                // s
-            $phone                     // s
-        );
+        $stmt->bind_param('iisddddssssss', ...);
+
 
         if (!$stmt->execute()) {
             echo "Error: " . $stmt->error;

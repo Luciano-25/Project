@@ -1,12 +1,10 @@
 <?php
-// customer_list.php
 include '../config.php';
 include 'admin_header.php';
 
 // Get search query from GET
 $search = $_GET['search'] ?? '';
 
-// Prepare query with search filter if applicable
 if ($search) {
     $stmt = $conn->prepare("SELECT * FROM users WHERE user_type != 'admin' AND (username LIKE ? OR email LIKE ?) ORDER BY created_at DESC");
     $like_search = "%$search%";
@@ -25,35 +23,20 @@ if ($search) {
     <title>Customer List - Admin</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
-        .styled-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-        .styled-table th, .styled-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .styled-table th {
-            background-color: #2c3e50;
-            color: #fff;
-        }
-        h2 {
-            margin-bottom: 20px;
-            padding-top: 20px;
-        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
         .search-form {
             margin-bottom: 20px;
         }
+
         .search-input {
             padding: 8px 10px;
             width: 300px;
@@ -61,6 +44,7 @@ if ($search) {
             border: 1px solid #ccc;
             font-size: 16px;
         }
+
         .search-button {
             padding: 8px 16px;
             border: none;
@@ -71,8 +55,43 @@ if ($search) {
             font-weight: bold;
             margin-left: 8px;
         }
+
         .search-button:hover {
             background-color: #2980b9;
+        }
+
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .styled-table th, .styled-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .styled-table th {
+            background-color: #2c3e50;
+            color: #fff;
+        }
+
+        .customer-row {
+            cursor: pointer;
+        }
+
+        .details-row {
+            display: none;
+            background: #f9f9f9;
+        }
+
+        .details-cell {
+            padding: 15px;
+            border-top: 1px solid #ccc;
         }
     </style>
 </head>
@@ -95,11 +114,28 @@ if ($search) {
         </thead>
         <tbody>
             <?php if ($customers->num_rows > 0): ?>
-                <?php while ($customer = $customers->fetch_assoc()): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($customer['username']) ?></td>
-                        <td><?= htmlspecialchars($customer['email']) ?></td>
-                        <td><?= date('d M Y', strtotime($customer['created_at'])) ?></td>
+                <?php while ($c = $customers->fetch_assoc()): ?>
+                    <tr class="customer-row" onclick="toggleDetails('details<?= $c['id']; ?>')">
+                        <td><?= htmlspecialchars($c['username']) ?></td>
+                        <td><?= htmlspecialchars($c['email']) ?></td>
+                        <td><?= date('d M Y', strtotime($c['created_at'])) ?></td>
+                    </tr>
+                    <tr id="details<?= $c['id']; ?>" class="details-row">
+                        <td colspan="3" class="details-cell">
+                            <?php
+                            $user_id = $c['id'];
+                            $order_stmt = $conn->prepare("SELECT shipping_address, shipping_city, shipping_postal_code FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
+                            $order_stmt->bind_param("i", $user_id);
+                            $order_stmt->execute();
+                            $order_result = $order_stmt->get_result()->fetch_assoc();
+
+                            $address = $order_result ? $order_result['shipping_address'] . ', ' . $order_result['shipping_city'] . ', ' . $order_result['shipping_postal_code'] : 'N/A';
+                            ?>
+                            <strong>Full Name:</strong> <?= htmlspecialchars($c['full_name'] ?? 'N/A'); ?><br>
+                            <strong>Email:</strong> <?= htmlspecialchars($c['email']); ?><br>
+                            <strong>Phone:</strong> <?= htmlspecialchars($c['phone'] ?? 'N/A'); ?><br>
+                            <strong>Address:</strong> <?= htmlspecialchars($address); ?>
+                        </td>
                     </tr>
                 <?php endwhile; ?>
             <?php else: ?>
@@ -110,5 +146,12 @@ if ($search) {
         </tbody>
     </table>
 </div>
+
+<script>
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        row.style.display = (row.style.display === 'table-row') ? 'none' : 'table-row';
+    }
+</script>
 </body>
 </html>

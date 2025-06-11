@@ -55,7 +55,7 @@ if (isset($_GET['id'])) {
                         <div class="quantity-selector">
                             <label for="quantity">Quantity:</label>
                             <select name="quantity" id="quantity">
-                                <?php for($i = 1; $i <= min(10, $book['stock']); $i++): ?>
+                                <?php for($i = 1; $i <= 5; $i++): ?>
                                     <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                                 <?php endfor; ?>
                             </select>
@@ -73,3 +73,4 @@ if (isset($_GET['id'])) {
     <?php include 'footer.php'; ?>
 </body>
 </html>
+

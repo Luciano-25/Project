@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_SESSION['
             $insert->execute();
         }
 
-        header("Location: book_details.php?id=$book_id&sort=$sort");
+        header("Location: book_details.php?id=$book_id&sort=$sort#review-form");
         exit();
     } else {
         $review_error = "You must mark your order as received before leaving a review.";
@@ -86,7 +86,12 @@ $reviews = $reviews_stmt->get_result();
         .review { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .review h4 { margin: 5px 0; font-size: 18px; }
         .rating-stars i { color: #f39c12; }
-        .rating-stars-input { display: flex; flex-direction: row-reverse; gap: 5px; justify-content: flex-start; }
+        .rating-stars-input {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 5px;
+            justify-content: flex-start;
+        }
         .rating-stars-input input { display: none; }
         .rating-stars-input label {
             font-size: 25px;
@@ -160,7 +165,7 @@ $reviews = $reviews_stmt->get_result();
     </div>
 
     <!-- Review Section -->
-    <div class="reviews-section">
+    <div class="reviews-section" id="review-form">
         <h2>Customer Reviews</h2>
 
         <!-- Sort Form -->
@@ -220,5 +225,4 @@ $reviews = $reviews_stmt->get_result();
 <?php include 'footer.php'; ?>
 </body>
 </html>
-
 

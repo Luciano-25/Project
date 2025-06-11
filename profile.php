@@ -2,7 +2,6 @@
 session_start();
 require_once 'config.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -10,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// If customer marked as received
+// Mark order as received
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['mark_received'])) {
     $order_id = $_POST['order_id'];
     $update = $conn->prepare("UPDATE orders SET status = 'Order Completed' WHERE id = ? AND user_id = ?");
@@ -22,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['m
     exit();
 }
 
-
 // Fetch user data
 $sql = "SELECT *, DATE_FORMAT(created_at, '%M %Y') as member_since FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
@@ -31,7 +29,7 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 // Fetch order history
-$sql = "SELECT id, book_title, quantity, unit_price, total_price, shipping_address, shipping_city, shipping_postal_code, status, created_at 
+$sql = "SELECT id, book_id, book_title, quantity, unit_price, total_price, shipping_address, shipping_city, shipping_postal_code, status, created_at 
         FROM orders 
         WHERE user_id = ? 
         ORDER BY created_at DESC";
@@ -57,7 +55,6 @@ $orders = $stmt->get_result();
             background: #fff;
             padding: 15px;
         }
-
         .order-header {
             font-weight: bold;
             color: #2c3e50;
@@ -65,18 +62,15 @@ $orders = $stmt->get_result();
             display: flex;
             justify-content: space-between;
         }
-
         .order-details {
             display: none;
             margin-top: 15px;
             padding-left: 15px;
             border-top: 1px solid #eee;
         }
-
         .order-details p {
             margin: 5px 0;
         }
-
         .mark-received-btn {
             margin-top: 10px;
             padding: 6px 14px;
@@ -87,14 +81,22 @@ $orders = $stmt->get_result();
             font-weight: bold;
             cursor: pointer;
         }
-
+        .leave-review-btn {
+            background-color: #3498db;
+        }
         .mark-received-btn:hover {
             background-color: #219150;
         }
-
         .no-orders {
             font-style: italic;
             color: #888;
+        }
+        .success-message {
+            padding: 10px;
+            background: #d4edda;
+            color: #155724;
+            margin-bottom: 15px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -104,15 +106,15 @@ $orders = $stmt->get_result();
 <div class="profile-container">
     <div class="profile-header">
         <div class="profile-info">
-            <h1>Welcome, <?php echo $user['username']; ?></h1>
-            <p><?php echo $user['email']; ?></p>
+            <h1>Welcome, <?php echo htmlspecialchars($user['username']); ?></h1>
+            <p><?php echo htmlspecialchars($user['email']); ?></p>
         </div>
     </div>
 
     <div class="profile-content">
         <?php if (isset($_SESSION['message'])): ?>
-            <div class="success-message" style="padding: 10px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 5px;">
-        <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
+            <div class="success-message">
+                <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
             </div>
         <?php endif; ?>
 
@@ -146,11 +148,14 @@ $orders = $stmt->get_result();
                                 <p><strong>Total:</strong> RM <?php echo number_format($order['total_price'], 2); ?></p>
                                 <p><strong>Shipping Address:</strong> <?php echo htmlspecialchars($order['shipping_address']) . ', ' . htmlspecialchars($order['shipping_city']) . ', ' . htmlspecialchars($order['shipping_postal_code']); ?></p>
                                 <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
+
                                 <?php if ($order['status'] !== 'Order Completed'): ?>
                                     <form method="POST">
                                         <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                         <button type="submit" name="mark_received" class="mark-received-btn">Mark as Received</button>
                                     </form>
+                                <?php else: ?>
+                                    <a href="book_details.php?id=<?php echo $order['book_id']; ?>#review-form" class="mark-received-btn leave-review-btn">Leave a Review</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -171,6 +176,5 @@ $orders = $stmt->get_result();
         details.style.display = (details.style.display === 'block') ? 'none' : 'block';
     }
 </script>
-
 </body>
 </html>

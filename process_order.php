@@ -10,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     $shipping_city = $_POST['shipping_city'];
     $shipping_postal_code = $_POST['shipping_postal_code'];
 
+    // Set default order status with estimated arrival
+    $status = "Order Pending (Estimated arrival in 6 days)";
+
     foreach ($_SESSION['cart'] as $book_id => $item) {
         // Get book details including price at purchase time
         $sql = "SELECT title, price FROM books WHERE id = ?";
@@ -23,18 +26,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         $quantity = is_array($item) ? $item['quantity'] : $item;
         $total_price = $unit_price * $quantity;
 
-        // Insert order with stored price
+        // Insert order with stored price and pending status
         $sql = "INSERT INTO orders (
             user_id, book_id, book_title, quantity, unit_price, total_price, total_amount,
             status, created_at, sale_date,
             shipping_address, shipping_city, shipping_postal_code
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'successful', NOW(), NOW(), ?, ?, ?)";
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
             "iisdddssss",
             $user_id, $book_id, $book_title, $quantity, $unit_price, $total_price, $total_price,
-            $shipping_address, $shipping_city, $shipping_postal_code
+            $status, $shipping_address, $shipping_city, $shipping_postal_code
         );
         $stmt->execute();
 
@@ -45,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         $stmt->execute();
     }
 
+    // Clear cart and redirect
     unset($_SESSION['cart']);
     header("Location: order_confirmation.php");
     exit();
 }
 ?>
-

@@ -132,7 +132,6 @@ $orders = $stmt->get_result();
                             <div class="order-details">
                                 <p><strong>Book Title:</strong> <?php echo htmlspecialchars($order['book_title']); ?></p>
                                 <p><strong>Quantity:</strong> <?php echo $order['quantity']; ?></p>
-                                <p><strong>Unit Price:</strong> RM <?php echo number_format($order['unit_price'], 2); ?></p>
                                 <p><strong>Total:</strong> RM <?php echo number_format($order['total_price'], 2); ?></p>
                                 <p><strong>Shipping Address:</strong> <?php echo htmlspecialchars($order['shipping_address']) . ', ' . htmlspecialchars($order['shipping_city']) . ', ' . htmlspecialchars($order['shipping_postal_code']); ?></p>
                                 <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>

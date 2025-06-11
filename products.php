@@ -2,43 +2,43 @@
 session_start();
 require_once 'config.php';
 
-// Get search, sort, and genre filter from GET parameters
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'title';
 $genre_filter = isset($_GET['genre']) ? $_GET['genre'] : '';
 
-// Fetch distinct genres for the dropdown
 $genre_sql = "SELECT DISTINCT genre FROM books ORDER BY genre ASC";
 $genre_result = $conn->query($genre_sql);
 
-// Build the SQL query to fetch books with filters
-$sql = "SELECT * FROM books WHERE 1";
+// Updated SQL to include average rating
+$sql = "SELECT b.*, 
+               (SELECT ROUND(AVG(r.rating), 1) 
+                FROM reviews r 
+                JOIN orders o ON r.order_id = o.id 
+                WHERE o.book_id = b.id) AS avg_rating 
+        FROM books b WHERE 1";
 
-// Add search condition
 if ($search) {
     $search_esc = $conn->real_escape_string($search);
-    $sql .= " AND (title LIKE '%$search_esc%' OR author LIKE '%$search_esc%')";
+    $sql .= " AND (b.title LIKE '%$search_esc%' OR b.author LIKE '%$search_esc%')";
 }
 
-// Add genre filter condition if selected and not 'all'
 if ($genre_filter && $genre_filter !== 'all') {
     $genre_esc = $conn->real_escape_string($genre_filter);
-    $sql .= " AND genre = '$genre_esc'";
+    $sql .= " AND b.genre = '$genre_esc'";
 }
 
-// Add sorting
 switch ($sort) {
     case 'price_low':
-        $sql .= " ORDER BY price ASC";
+        $sql .= " ORDER BY b.price ASC";
         break;
     case 'price_high':
-        $sql .= " ORDER BY price DESC";
+        $sql .= " ORDER BY b.price DESC";
         break;
     case 'rating':
-        $sql .= " ORDER BY rating DESC";
+        $sql .= " ORDER BY avg_rating DESC";
         break;
     default:
-        $sql .= " ORDER BY title ASC";
+        $sql .= " ORDER BY b.title ASC";
 }
 
 $result = $conn->query($sql);
@@ -148,16 +148,11 @@ $result = $conn->query($sql);
                         <p class="book-author">by <?php echo htmlspecialchars($book['author']); ?></p>
                         <div class="book-rating">
                             <?php
-                            $rating = $book['rating'];
+                            $avg = round($book['avg_rating']);
                             for ($i = 1; $i <= 5; $i++) {
-                                if ($i <= $rating) {
-                                    echo '<i class="fas fa-star"></i>';
-                                } elseif ($i - 0.5 <= $rating) {
-                                    echo '<i class="fas fa-star-half-alt"></i>';
-                                } else {
-                                    echo '<i class="far fa-star"></i>';
-                                }
+                                echo '<i class="fa-star ' . ($i <= $avg ? 'fas' : 'far') . '"></i>';
                             }
+                            echo $book['avg_rating'] ? " ({$book['avg_rating']}/5)" : " (No ratings)";
                             ?>
                         </div>
                         <p class="book-price">RM <?php echo number_format($book['price'], 2); ?></p>

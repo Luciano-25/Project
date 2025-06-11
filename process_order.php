@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "iisdddssss",
+            "iisidddssss",
             $user_id, $book_id, $book_title, $quantity, $unit_price, $total_price, $total_price,
             $status, $shipping_address, $shipping_city, $shipping_postal_code
         );

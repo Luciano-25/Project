@@ -14,10 +14,6 @@
                 <a href="view_books.php"><i class="fas fa-book"></i> Manage Books</a>
                 <a href="view_sales.php"><i class="fas fa-chart-line"></i> Sales Report</a>
                 <div class="nav-right">
-                    <a href="index_admin.php" class="view-site">
-                        <i class="fas fa-external-link-alt"></i>
-                        View Main Site
-                    </a>
                     <a href="../logout.php" class="logout-link">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>

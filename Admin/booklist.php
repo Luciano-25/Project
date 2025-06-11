@@ -3,19 +3,16 @@
 include '../config.php';
 include 'admin_header.php';
 
-// Get the search query from GET request
+// Get search query
 $search = $_GET['search'] ?? '';
 
-// Prepare the SQL query with search filter if applicable
 if ($search) {
-    // Use prepared statements to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM books WHERE title LIKE ? OR author LIKE ? ORDER BY created_at DESC");
-    $like_search = "%$search%";
-    $stmt->bind_param("ss", $like_search, $like_search);
+    $like = "%$search%";
+    $stmt->bind_param("ss", $like, $like);
     $stmt->execute();
     $books = $stmt->get_result();
 } else {
-    // No search filter, get all books
     $books = $conn->query("SELECT * FROM books ORDER BY created_at DESC");
 }
 ?>
@@ -44,12 +41,8 @@ if ($search) {
             background-color: #2c3e50;
             color: #fff;
         }
-        h2 {
-            margin-bottom: 20px;
-        }
-        .search-form {
-            margin-bottom: 20px;
-        }
+        h2 { margin-bottom: 20px; }
+        .search-form { margin-bottom: 20px; }
         .search-input {
             padding: 8px 10px;
             width: 300px;
@@ -82,30 +75,47 @@ if ($search) {
     </form>
 
     <table class="styled-table">
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Price (RM)</th>
-            <th>Rating</th>
-            <th>Stock</th>
-            <th>Created At</th>
-        </tr>
-        <?php if ($books->num_rows > 0): ?>
-            <?php while ($book = $books->fetch_assoc()): ?>
-                <tr>
-                    <td><?= htmlspecialchars($book['title']) ?></td>
-                    <td><?= htmlspecialchars($book['author']) ?></td>
-                    <td><?= number_format($book['price'], 2) ?></td>
-                    <td><?= htmlspecialchars($book['rating']) ?></td>
-                    <td><?= $book['stock'] ?></td>
-                    <td><?= date('d M Y', strtotime($book['created_at'])) ?></td>
-                </tr>
-            <?php endwhile; ?>
-        <?php else: ?>
+        <thead>
             <tr>
-                <td colspan="6" style="text-align:center;">No books found.</td>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Price (RM)</th>
+                <th>Average Rating</th>
+                <th>Stock</th>
+                <th>Created At</th>
             </tr>
-        <?php endif; ?>
+        </thead>
+        <tbody>
+            <?php if ($books->num_rows > 0): ?>
+                <?php while ($book = $books->fetch_assoc()): ?>
+                    <?php
+                        // Fetch average rating live from review + orders
+                        $rating_sql = $conn->prepare("
+                            SELECT AVG(r.rating) as avg_rating
+                            FROM reviews r
+                            JOIN orders o ON r.order_id = o.id
+                            WHERE o.book_id = ?
+                        ");
+                        $rating_sql->bind_param("i", $book['id']);
+                        $rating_sql->execute();
+                        $avg_result = $rating_sql->get_result()->fetch_assoc();
+                        $avg_rating = $avg_result['avg_rating'] ? round($avg_result['avg_rating'], 1) : 'N/A';
+                    ?>
+                    <tr>
+                        <td><?= htmlspecialchars($book['title']) ?></td>
+                        <td><?= htmlspecialchars($book['author']) ?></td>
+                        <td><?= number_format($book['price'], 2) ?></td>
+                        <td><?= $avg_rating ?></td>
+                        <td><?= $book['stock'] ?></td>
+                        <td><?= date('d M Y', strtotime($book['created_at'])) ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" style="text-align:center;">No books found.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
     </table>
 </div>
 </body>

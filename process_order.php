@@ -13,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     $shipping_city = $_POST['shipping_city'];
     $shipping_postal_code = $_POST['shipping_postal_code'];
 
-    // Set default order status with estimated arrival
+    // Set default order status
     $status = "Order Pending (Estimated arrival in 6 days)";
 
     foreach ($_SESSION['cart'] as $book_id => $item) {
-        // Get book details including price at purchase time
+        // Get book details
         $sql = "SELECT title, price FROM books WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $book_id);
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         $quantity = is_array($item) ? $item['quantity'] : $item;
         $total_price = $unit_price * $quantity;
 
-        // Insert order including full_name and phone
+        // Insert order with correct bind_param types
         $sql = "INSERT INTO orders (
             user_id, book_id, book_title, quantity, unit_price, total_price, total_amount,
             status, created_at, sale_date,
@@ -39,13 +39,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "iisidddssssss",
-            $user_id, $book_id, $book_title, $quantity, $unit_price, $total_price, $total_price,
-            $status, $shipping_address, $shipping_city, $shipping_postal_code, $full_name, $phone
+            "iisd ddssssss",
+            $user_id,                  // i
+            $book_id,                  // i
+            $book_title,               // s
+            $quantity,                 // i
+            $unit_price,               // d
+            $total_price,              // d
+            $total_price,              // d
+            $status,                   // s
+            $shipping_address,         // s
+            $shipping_city,            // s
+            $shipping_postal_code,     // s
+            $full_name,                // s
+            $phone                     // s
         );
-        $stmt->execute();
 
-        // Update stock
+        if (!$stmt->execute()) {
+            echo "Error: " . $stmt->error;
+            exit();
+        }
+
+        // Update book stock
         $update_stock = "UPDATE books SET stock = stock - ? WHERE id = ?";
         $stmt = $conn->prepare($update_stock);
         $stmt->bind_param("ii", $quantity, $book_id);

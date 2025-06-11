@@ -2,14 +2,32 @@
 include '../config.php';
 include 'admin_header.php';
 
-// Get search query from GET
-$search = $_GET['search'] ?? '';
+// Handle inline update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
+    $id = $_POST['user_id'];
+    $fullname = $_POST['full_name'];
+    $email = $_POST['email'];
+    $phone = $_POST['phone'];
 
-// Fetch customers
+    $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=?");
+    $stmt->bind_param("sssi", $fullname, $email, $phone, $id);
+    $stmt->execute();
+}
+
+// Handle deletion
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
+    $id = $_POST['user_id'];
+    $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+}
+
+// Get search query
+$search = $_GET['search'] ?? '';
 if ($search) {
     $stmt = $conn->prepare("SELECT * FROM users WHERE user_type != 'admin' AND (username LIKE ? OR email LIKE ?) ORDER BY created_at DESC");
-    $like_search = "%$search%";
-    $stmt->bind_param("ss", $like_search, $like_search);
+    $like = "%$search%";
+    $stmt->bind_param("ss", $like, $like);
     $stmt->execute();
     $customers = $stmt->get_result();
 } else {
@@ -24,72 +42,26 @@ if ($search) {
     <title>Customer List - Admin</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h2 {
-            margin-bottom: 20px;
-        }
-        .search-form {
-            margin-bottom: 20px;
-        }
-        .search-input {
-            padding: 8px 10px;
-            width: 300px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-        .search-button {
-            padding: 8px 16px;
-            border: none;
-            background-color: #3498db;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        .search-button:hover {
-            background-color: #2980b9;
-        }
-        .styled-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .styled-table th, .styled-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .styled-table th {
-            background-color: #2c3e50;
-            color: #fff;
-        }
-        .customer-row {
-            cursor: pointer;
-        }
-        .details-row {
-            display: none;
-            background: #f9f9f9;
-        }
-        .details-cell {
-            padding: 15px;
-            border-top: 1px solid #ccc;
-        }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .styled-table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
+        .styled-table th, .styled-table td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: left; }
+        .styled-table th { background-color: #2c3e50; color: #fff; }
+        .customer-row { cursor: pointer; }
+        .details-row { display: none; background: #f9f9f9; }
+        .details-cell { padding: 15px; border-top: 1px solid #ccc; }
+        .action-buttons button { margin-right: 10px; padding: 6px 10px; border-radius: 4px; border: none; cursor: pointer; }
+        .edit-btn { background-color: #f39c12; color: white; }
+        .delete-btn { background-color: #e74c3c; color: white; }
+        .save-btn { background-color: #27ae60; color: white; }
+        .cancel-btn { background-color: #7f8c8d; color: white; }
+        .view-orders { margin-top: 10px; background: #eef; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>All Customers</h2>
 
-    <form method="get" class="search-form">
+    <form method="get" class="search-form" style="margin-bottom: 20px;">
         <input type="text" name="search" class="search-input" placeholder="Search by Username or Email" value="<?= htmlspecialchars($search) ?>">
         <button type="submit" class="search-button">Search</button>
     </form>
@@ -99,41 +71,70 @@ if ($search) {
             <tr>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Registered</th>
+                <th>Created At</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            <?php if ($customers->num_rows > 0): ?>
-                <?php while ($c = $customers->fetch_assoc()): ?>
-                    <tr class="customer-row" onclick="toggleDetails('details<?= $c['id']; ?>')">
-                        <td><?= htmlspecialchars($c['username']) ?></td>
-                        <td><?= htmlspecialchars($c['email']) ?></td>
-                        <td><?= date('d M Y', strtotime($c['created_at'])) ?></td>
-                    </tr>
-                    <tr id="details<?= $c['id']; ?>" class="details-row">
-                        <td colspan="3" class="details-cell">
-                            <?php
-                            $user_id = $c['id'];
-                            $order_stmt = $conn->prepare("SELECT shipping_address, shipping_city, shipping_postal_code FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
-                            $order_stmt->bind_param("i", $user_id);
-                            $order_stmt->execute();
-                            $order_result = $order_stmt->get_result()->fetch_assoc();
-                            $address = $order_result ? 
-                                htmlspecialchars($order_result['shipping_address'] . ', ' . $order_result['shipping_city'] . ', ' . $order_result['shipping_postal_code']) 
-                                : 'N/A';
-                            ?>
-                            <strong>Full Name:</strong> <?= htmlspecialchars($c['full_name'] ?? 'N/A') ?><br>
-                            <strong>Phone:</strong> <?= htmlspecialchars($c['phone'] ?? 'N/A') ?><br>
-                            <strong>Email:</strong> <?= htmlspecialchars($c['email']) ?><br>
-                            <strong>Latest Shipping Address:</strong> <?= $address ?>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="3" style="text-align:center;">No customers found.</td>
+        <?php if ($customers->num_rows > 0): ?>
+            <?php while ($c = $customers->fetch_assoc()): ?>
+                <tr class="customer-row" onclick="toggleDetails('details<?= $c['id']; ?>')">
+                    <td><?= htmlspecialchars($c['username']) ?></td>
+                    <td><?= htmlspecialchars($c['email']) ?></td>
+                    <td><?= date('d M Y', strtotime($c['created_at'])) ?></td>
+                    <td class="action-buttons">
+                        <button class="edit-btn" onclick="event.stopPropagation(); toggleEdit('form<?= $c['id']; ?>')">Edit</button>
+                        <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <input type="hidden" name="user_id" value="<?= $c['id']; ?>">
+                            <button type="submit" name="delete_user" class="delete-btn">Delete</button>
+                        </form>
+                    </td>
                 </tr>
-            <?php endif; ?>
+               <tr id="details<?= $c['id']; ?>" class="details-row">
+    <td colspan="4" class="details-cell">
+        <div class="user-info">
+            <strong>Full Name:</strong> <?= htmlspecialchars($c['full_name'] ?? 'N/A'); ?><br>
+            <strong>Email:</strong> <?= htmlspecialchars($c['email']); ?><br>
+            <strong>Phone:</strong> <?= htmlspecialchars($c['phone'] ?? 'N/A'); ?><br>
+        </div>
+
+        <!-- Edit form (hidden by default) -->
+        <form method="POST" id="form<?= $c['id']; ?>" style="display:none; margin-top: 10px;">
+            <input type="hidden" name="user_id" value="<?= $c['id']; ?>">
+            <label>Full Name: <input type="text" name="full_name" value="<?= htmlspecialchars($c['full_name'] ?? ''); ?>"></label><br>
+            <label>Email: <input type="email" name="email" value="<?= htmlspecialchars($c['email']); ?>"></label><br>
+            <label>Phone: <input type="text" name="phone" value="<?= htmlspecialchars($c['phone'] ?? ''); ?>"></label><br>
+            <button type="submit" name="update_user" class="save-btn">Save</button>
+            <button type="button" class="cancel-btn" onclick="toggleEdit('form<?= $c['id']; ?>')">Cancel</button>
+        </form>
+
+        <!-- Orders Section -->
+        <div class="view-orders" style="margin-top: 10px;">
+            <strong>Previous Orders:</strong><br>
+            <?php
+            $oid = $c['id'];
+            $orders = $conn->prepare("SELECT book_title, quantity, total_price, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC");
+            $orders->bind_param("i", $oid);
+            $orders->execute();
+            $results = $orders->get_result();
+            if ($results->num_rows > 0) {
+                while ($o = $results->fetch_assoc()) {
+                    echo "<div>📘 <strong>" . htmlspecialchars($o['book_title']) . "</strong> ×" . $o['quantity'] .
+                         " — RM " . number_format($o['total_price'], 2) .
+                         " on " . date('d M Y', strtotime($o['created_at'])) . "</div>";
+                }
+            } else {
+                echo "No orders found.";
+            }
+            ?>
+        </div>
+    </td>
+</tr>
+
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr><td colspan="4" style="text-align:center;">No customers found.</td></tr>
+        <?php endif; ?>
         </tbody>
     </table>
 </div>
@@ -141,7 +142,11 @@ if ($search) {
 <script>
 function toggleDetails(id) {
     const row = document.getElementById(id);
-    row.style.display = (row.style.display === 'table-row') ? 'none' : 'table-row';
+    row.style.display = row.style.display === 'table-row' ? 'none' : 'table-row';
+}
+function toggleEdit(formId) {
+    const form = document.getElementById(formId);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 </body>

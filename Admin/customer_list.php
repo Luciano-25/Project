@@ -5,6 +5,7 @@ include 'admin_header.php';
 // Get search query from GET
 $search = $_GET['search'] ?? '';
 
+// Fetch customers
 if ($search) {
     $stmt = $conn->prepare("SELECT * FROM users WHERE user_type != 'admin' AND (username LIKE ? OR email LIKE ?) ORDER BY created_at DESC");
     $like_search = "%$search%";
@@ -28,15 +29,12 @@ if ($search) {
             margin: 0 auto;
             padding: 20px;
         }
-
         h2 {
             margin-bottom: 20px;
         }
-
         .search-form {
             margin-bottom: 20px;
         }
-
         .search-input {
             padding: 8px 10px;
             width: 300px;
@@ -44,7 +42,6 @@ if ($search) {
             border: 1px solid #ccc;
             font-size: 16px;
         }
-
         .search-button {
             padding: 8px 16px;
             border: none;
@@ -55,11 +52,9 @@ if ($search) {
             font-weight: bold;
             margin-left: 8px;
         }
-
         .search-button:hover {
             background-color: #2980b9;
         }
-
         .styled-table {
             width: 100%;
             border-collapse: collapse;
@@ -68,27 +63,22 @@ if ($search) {
             border-radius: 10px;
             overflow: hidden;
         }
-
         .styled-table th, .styled-table td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-
         .styled-table th {
             background-color: #2c3e50;
             color: #fff;
         }
-
         .customer-row {
             cursor: pointer;
         }
-
         .details-row {
             display: none;
             background: #f9f9f9;
         }
-
         .details-cell {
             padding: 15px;
             border-top: 1px solid #ccc;
@@ -109,7 +99,7 @@ if ($search) {
             <tr>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Created At</th>
+                <th>Registered</th>
             </tr>
         </thead>
         <tbody>
@@ -128,13 +118,14 @@ if ($search) {
                             $order_stmt->bind_param("i", $user_id);
                             $order_stmt->execute();
                             $order_result = $order_stmt->get_result()->fetch_assoc();
-
-                            $address = $order_result ? $order_result['shipping_address'] . ', ' . $order_result['shipping_city'] . ', ' . $order_result['shipping_postal_code'] : 'N/A';
+                            $address = $order_result ? 
+                                htmlspecialchars($order_result['shipping_address'] . ', ' . $order_result['shipping_city'] . ', ' . $order_result['shipping_postal_code']) 
+                                : 'N/A';
                             ?>
-                            <strong>Full Name:</strong> <?= htmlspecialchars($c['full_name'] ?? 'N/A'); ?><br>
-                            <strong>Email:</strong> <?= htmlspecialchars($c['email']); ?><br>
-                            <strong>Phone:</strong> <?= htmlspecialchars($c['phone'] ?? 'N/A'); ?><br>
-                            <strong>Address:</strong> <?= htmlspecialchars($address); ?>
+                            <strong>Full Name:</strong> <?= htmlspecialchars($c['full_name'] ?? 'N/A') ?><br>
+                            <strong>Phone:</strong> <?= htmlspecialchars($c['phone'] ?? 'N/A') ?><br>
+                            <strong>Email:</strong> <?= htmlspecialchars($c['email']) ?><br>
+                            <strong>Latest Shipping Address:</strong> <?= $address ?>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -148,10 +139,10 @@ if ($search) {
 </div>
 
 <script>
-    function toggleDetails(id) {
-        const row = document.getElementById(id);
-        row.style.display = (row.style.display === 'table-row') ? 'none' : 'table-row';
-    }
+function toggleDetails(id) {
+    const row = document.getElementById(id);
+    row.style.display = (row.style.display === 'table-row') ? 'none' : 'table-row';
+}
 </script>
 </body>
 </html>

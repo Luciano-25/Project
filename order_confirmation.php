@@ -54,7 +54,6 @@ $review_link = "review.php?book_id=" . $order['book_id'];
             </div>
 
            <div class="review-prompt">
-                <h3>How was your experience?</h3>
                 <?php if ($order['status'] === 'Order Completed'): ?>
                 <p>You can now leave a review for this book!</p>
                 <a href="book_details.php?id=<?php echo $order['book_id']; ?>" class="review-btn">Leave a Review</a>

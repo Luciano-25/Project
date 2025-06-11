@@ -9,14 +9,13 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Get cart items
-$cart_items = array();
+$cart_items = [];
 if (!empty($_SESSION['cart'])) {
     $ids = implode(',', array_keys($_SESSION['cart']));
     $sql = "SELECT * FROM books WHERE id IN ($ids)";
     $result = $conn->query($sql);
     while ($book = $result->fetch_assoc()) {
-        $current_item = $_SESSION['cart'][$book['id']];
-        $quantity = is_array($current_item) ? $current_item['quantity'] : $current_item;
+        $quantity = is_array($_SESSION['cart'][$book['id']]) ? $_SESSION['cart'][$book['id']]['quantity'] : $_SESSION['cart'][$book['id']];
         $book['quantity'] = (int)$quantity;
         $cart_items[] = $book;
     }
@@ -30,10 +29,9 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
 
-// Get user details
+// Get user info
 $user_id = $_SESSION['user_id'];
-$sql = "SELECT * FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -43,7 +41,6 @@ $user = $stmt->get_result()->fetch_assoc();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookHaven - Checkout</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
@@ -57,8 +54,7 @@ $user = $stmt->get_result()->fetch_assoc();
                 <a href="products.php">Browse</a>
                 <div class="nav-right">
                     <a href="profile.php" class="profile-link">
-                        <i class="fas fa-user"></i>
-                        <?php echo $_SESSION['username']; ?>
+                        <i class="fas fa-user"></i> <?php echo $_SESSION['username']; ?>
                     </a>
                     <button onclick="history.back()" class="back-button">
                         <i class="fas fa-arrow-left"></i> Back
@@ -77,11 +73,15 @@ $user = $stmt->get_result()->fetch_assoc();
                         <h3>Shipping Information</h3>
                         <div class="form-group">
                             <label for="full_name">Full Name</label>
-                            <input type="text" id="full_name" name="full_name" required>
+                            <input type="text" id="full_name" name="full_name" required value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?php echo $user['email']; ?>" required>
+                            <input type="email" id="email" name="email" required value="<?php echo htmlspecialchars($user['email']); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="address">Address</label>
@@ -94,11 +94,6 @@ $user = $stmt->get_result()->fetch_assoc();
                         <div class="form-group">
                             <label for="postal">Postal Code</label>
                             <input type="text" id="postal" name="shipping_postal_code" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" required>
                         </div>
                     </div>
 
@@ -123,7 +118,7 @@ $user = $stmt->get_result()->fetch_assoc();
                             <div class="form-group">
                                 <label for="expiry">Expiry Date</label>
                                 <input type="text" id="expiry" name="expiry" placeholder="MM/YY" maxlength="5" required>
-                                <small id="expiry-error" style="color: red;"></small> <!-- ✅ Live error container -->
+                                <small id="expiry-error" style="color: red;"></small>
                             </div>
                             <div class="form-group">
                                 <label for="cvv">CVV</label>
@@ -145,7 +140,7 @@ $user = $stmt->get_result()->fetch_assoc();
                     <?php foreach ($cart_items as $item): ?>
                         <div class="summary-item">
                             <div class="item-info">
-                                <span class="item-title"><?php echo $item['title']; ?></span>
+                                <span class="item-title"><?php echo htmlspecialchars($item['title']); ?></span>
                                 <span class="item-quantity">×<?php echo $item['quantity']; ?></span>
                             </div>
                             <span class="item-price">RM <?php echo number_format($item['price'] * $item['quantity'], 2); ?></span>
@@ -175,77 +170,45 @@ $user = $stmt->get_result()->fetch_assoc();
     </footer>
 
     <script>
-    // Format card number
-    document.getElementById('card_number').addEventListener('input', function (e) {
+    document.getElementById('card_number').addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
     });
 
-    // Format expiry date
-    document.getElementById('expiry').addEventListener('input', function (e) {
+    document.getElementById('expiry').addEventListener('input', function () {
         let value = this.value.replace(/\D/g, '');
-        if (value.length >= 2) {
-            value = value.slice(0, 2) + '/' + value.slice(2);
-        }
+        if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
         this.value = value;
-
-        // Also run validation while typing
         validateExpiry();
     });
 
-    // Format CVV
-    document.getElementById('cvv').addEventListener('input', function (e) {
+    document.getElementById('cvv').addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
     });
 
-    // Add expiry error container if not present
-    const expiryField = document.getElementById("expiry");
-    if (!document.getElementById("expiry-error")) {
-        const errorSmall = document.createElement("small");
-        errorSmall.id = "expiry-error";
-        errorSmall.style.color = "red";
-        expiryField.insertAdjacentElement("afterend", errorSmall);
-    }
-
-    // Real-time expiry validation
     function validateExpiry() {
-        const expiryInput = document.getElementById("expiry").value;
-        const errorContainer = document.getElementById("expiry-error");
-
-        errorContainer.textContent = "";
-
-        const match = expiryInput.match(/^(\d{2})\/(\d{2})$/);
-        if (!match) return true; // Let the user finish typing
-
-        const inputMonth = parseInt(match[1]);
-        const inputYear = 2000 + parseInt(match[2]);
-
+        const input = document.getElementById("expiry").value;
+        const error = document.getElementById("expiry-error");
+        error.textContent = "";
+        const match = input.match(/^(\d{2})\/(\d{2})$/);
+        if (!match) return true;
+        const month = parseInt(match[1]);
+        const year = 2000 + parseInt(match[2]);
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
-
-        if (
-            inputMonth < 1 || inputMonth > 12 ||
-            inputYear < currentYear ||
-            (inputYear === currentYear && inputMonth < currentMonth)
-        ) {
-            errorContainer.textContent = "❌ Expired card date.";
+        if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
+            error.textContent = "❌ Expired card date.";
             return false;
         }
-
         return true;
     }
 
-    // Prevent form submission if expiry date is invalid
     document.getElementById("checkoutForm").addEventListener("submit", function (e) {
-        if (!validateExpiry()) {
-            e.preventDefault();
-        }
+        if (!validateExpiry()) e.preventDefault();
     });
-</script>
-
+    </script>
 </body>
 </html>
-
 
 
 

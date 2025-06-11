@@ -6,6 +6,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 
     // Get shipping details from form
+    $full_name = $_POST['full_name'];
+    $email = $_POST['email']; // Optional: not stored
+    $phone = $_POST['phone'];
     $shipping_address = $_POST['shipping_address'];
     $shipping_city = $_POST['shipping_city'];
     $shipping_postal_code = $_POST['shipping_postal_code'];
@@ -26,18 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         $quantity = is_array($item) ? $item['quantity'] : $item;
         $total_price = $unit_price * $quantity;
 
-        // Insert order with stored price and pending status
+        // Insert order including full_name and phone
         $sql = "INSERT INTO orders (
             user_id, book_id, book_title, quantity, unit_price, total_price, total_amount,
             status, created_at, sale_date,
-            shipping_address, shipping_city, shipping_postal_code
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)";
+            shipping_address, shipping_city, shipping_postal_code,
+            full_name, phone
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "iisidddssss",
+            "iisidddssssss",
             $user_id, $book_id, $book_title, $quantity, $unit_price, $total_price, $total_price,
-            $status, $shipping_address, $shipping_city, $shipping_postal_code
+            $status, $shipping_address, $shipping_city, $shipping_postal_code, $full_name, $phone
         );
         $stmt->execute();
 

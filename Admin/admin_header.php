@@ -12,6 +12,7 @@
             <nav class="nav-links">
                 <a href="admin_dashboard.php">Dashboard</a>
                 <a href="view_books.php"><i class="fas fa-book"></i> Manage Books</a>
+                <li><a href="pending_orders.php">Pending Orders</a></li>
                 <a href="view_sales.php"><i class="fas fa-chart-line"></i> Sales Report</a>
                 <div class="nav-right">
                     <a href="../logout.php" class="logout-link">

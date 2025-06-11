@@ -25,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         $book = $stmt->get_result()->fetch_assoc();
 
         $book_title = $book['title'];
-        $unit_price = $book['price'];
-        $quantity = is_array($item) ? $item['quantity'] : $item;
+        $unit_price = (float)$book['price'];
+        $quantity = is_array($item) ? (int)$item['quantity'] : (int)$item;
         $total_price = $unit_price * $quantity;
 
-        // Insert order with correct bind_param types
+        // Insert order with correct bind_param types and values
         $sql = "INSERT INTO orders (
             user_id, book_id, book_title, quantity, unit_price, total_price, total_amount,
             status, created_at, sale_date,
@@ -38,11 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param('iisddddssssss', ...);
-
+        $stmt->bind_param(
+            'iisddddssssss',
+            $user_id,
+            $book_id,
+            $book_title,
+            $quantity,
+            $unit_price,
+            $total_price,
+            $total_price, // total_amount
+            $status,
+            $shipping_address,
+            $shipping_city,
+            $shipping_postal_code,
+            $full_name,
+            $phone
+        );
 
         if (!$stmt->execute()) {
-            echo "Error: " . $stmt->error;
+            echo "Error inserting order: " . $stmt->error;
             exit();
         }
 
@@ -59,3 +73,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
     exit();
 }
 ?>
+

@@ -17,12 +17,11 @@ $stmt->bind_param("i", $book_id);
 $stmt->execute();
 $book = $stmt->get_result()->fetch_assoc();
 
-// Current user
 $user_id = $_SESSION['user_id'] ?? null;
 $review_error = '';
 $existing_review = null;
 
-// Check if user has reviewed
+// Check if user already reviewed
 if ($user_id) {
     $check = $conn->prepare("SELECT r.* FROM reviews r JOIN orders o ON r.order_id = o.id WHERE r.user_id = ? AND o.book_id = ? LIMIT 1");
     $check->bind_param("ii", $user_id, $book_id);
@@ -31,12 +30,13 @@ if ($user_id) {
 }
 
 // Submit or update review
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating']) && $user_id) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_SESSION['user_id'])) {
     $rating = intval($_POST['rating']);
     $title = trim($_POST['title']);
     $text = trim($_POST['review_text']);
 
-    $order_check = $conn->prepare("SELECT id FROM orders WHERE user_id = ? AND book_id = ? LIMIT 1");
+    // Only allow if order is completed
+    $order_check = $conn->prepare("SELECT id FROM orders WHERE user_id = ? AND book_id = ? AND status = 'Order Completed' LIMIT 1");
     $order_check->bind_param("ii", $user_id, $book_id);
     $order_check->execute();
     $order_result = $order_check->get_result();
@@ -53,10 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating']) && $user_id
             $insert->bind_param("iiiss", $order_id, $user_id, $rating, $title, $text);
             $insert->execute();
         }
+
         header("Location: book_details.php?id=$book_id&sort=$sort");
         exit();
     } else {
-        $review_error = "You must purchase the book before reviewing.";
+        $review_error = "You must mark your order as received before leaving a review.";
     }
 }
 
@@ -85,7 +86,7 @@ $reviews = $reviews_stmt->get_result();
         .review { border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px; }
         .review h4 { margin: 5px 0; font-size: 18px; }
         .rating-stars i { color: #f39c12; }
-        .rating-stars-input { display: flex; flex-direction: row-reverse; gap: 5px; }
+        .rating-stars-input { display: flex; flex-direction: row-reverse; gap: 5px; justify-content: flex-start; }
         .rating-stars-input input { display: none; }
         .rating-stars-input label {
             font-size: 25px;

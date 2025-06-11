@@ -53,11 +53,16 @@ $review_link = "review.php?book_id=" . $order['book_id'];
                 <p><strong>Order Date:</strong> <?php echo date("F j, Y, g:i a", strtotime($order['created_at'])); ?></p>
             </div>
 
-            <div class="review-prompt">
-                <h3>Enjoyed your books?</h3>
-                <p>Share your thoughts with other readers!</p>
-                <a href="review.php?order_id=<?php echo $order['id']; ?>" class="review-btn">Write a Review</a>
-            </div>
+           <div class="review-prompt">
+                <h3>How was your experience?</h3>
+                <?php if ($order['status'] === 'Order Completed'): ?>
+                <p>You can now leave a review for this book!</p>
+                <a href="book_details.php?id=<?php echo $order['book_id']; ?>" class="review-btn">Leave a Review</a>
+                <?php else: ?>
+                <p><strong>Note:</strong> You can only leave a review after you mark your order as <em>"Received"</em> in your <a href="profile.php">order history</a>.</p>
+                <?php endif; ?>
+           </div>
+
 
             <div class="confirmation-actions">
                 <a href="profile.php" class="view-order-btn">View Order History</a>

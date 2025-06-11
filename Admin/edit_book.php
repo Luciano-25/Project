@@ -114,11 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <label>Current Rating:</label>
-            <p><?php echo number_format($book['rating'], 1); ?> ⭐ </p>
-        </div>
-
-        <div class="form-group">
             <label>Genre:</label>
             <select name="genre" required>
                 <option value="">-- Select Genre --</option>

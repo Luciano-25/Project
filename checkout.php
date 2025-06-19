@@ -2,13 +2,11 @@
 session_start();
 require_once 'config.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-// Get cart items
 $cart_items = [];
 if (!empty($_SESSION['cart'])) {
     $ids = implode(',', array_keys($_SESSION['cart']));
@@ -21,7 +19,6 @@ if (!empty($_SESSION['cart'])) {
     }
 }
 
-// Calculate totals
 $subtotal = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
@@ -29,7 +26,6 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
 
-// Get user info
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -44,6 +40,20 @@ $user = $stmt->get_result()->fetch_assoc();
     <title>BookHaven - Checkout</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .card-icons i {
+            font-size: 1.5em;
+            opacity: 0.3;
+            transition: opacity 0.2s ease-in-out;
+            margin-right: 6px;
+            color: #888;
+        }
+
+        .card-icons i.active {
+            opacity: 1;
+            color: #007bff;
+        }
+    </style>
 </head>
 <body>
     <header class="top-header">
@@ -106,7 +116,7 @@ $user = $stmt->get_result()->fetch_assoc();
                         <div class="form-group">
                             <label for="card_number">Card Number</label>
                             <div class="card-input-container">
-                                <input type="text" id="card_number" name="card_number" maxlength="16" required>
+                                <input type="text" id="card_number" name="card_number" maxlength="19" required placeholder="#### #### #### ####">
                                 <div class="card-icons">
                                     <i class="fab fa-cc-visa"></i>
                                     <i class="fab fa-cc-mastercard"></i>
@@ -170,7 +180,45 @@ $user = $stmt->get_result()->fetch_assoc();
     </footer>
 
     <script>
-    document.getElementById('card_number').addEventListener('input', function () {
+    document.getElementById("card_number").addEventListener("input", function () {
+        let raw = this.value.replace(/\D/g, '').slice(0, 16);
+        let formatted = raw.replace(/(.{4})/g, '$1 ').trim();
+        this.value = formatted;
+        highlightCardIcon(raw);
+    });
+
+    function highlightCardIcon(cardNumber) {
+        const visa = document.querySelector(".fa-cc-visa");
+        const mastercard = document.querySelector(".fa-cc-mastercard");
+        const amex = document.querySelector(".fa-cc-amex");
+
+        visa.classList.remove("active");
+        mastercard.classList.remove("active");
+        amex.classList.remove("active");
+
+        if (/^4/.test(cardNumber)) {
+            visa.classList.add("active");
+            setCVVLength(3);
+        } else if (/^5[1-5]/.test(cardNumber) || /^2[2-7]/.test(cardNumber)) {
+            mastercard.classList.add("active");
+            setCVVLength(3);
+        } else if (/^3[47]/.test(cardNumber)) {
+            amex.classList.add("active");
+            setCVVLength(4);
+        } else {
+            setCVVLength(3);
+        }
+    }
+
+    function setCVVLength(length) {
+        const cvvInput = document.getElementById("cvv");
+        cvvInput.maxLength = length;
+        if (cvvInput.value.length > length) {
+            cvvInput.value = cvvInput.value.slice(0, length);
+        }
+    }
+
+    document.getElementById('cvv').addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
     });
 
@@ -181,21 +229,19 @@ $user = $stmt->get_result()->fetch_assoc();
         validateExpiry();
     });
 
-    document.getElementById('cvv').addEventListener('input', function () {
-        this.value = this.value.replace(/\D/g, '');
-    });
-
     function validateExpiry() {
         const input = document.getElementById("expiry").value;
         const error = document.getElementById("expiry-error");
         error.textContent = "";
         const match = input.match(/^(\d{2})\/(\d{2})$/);
         if (!match) return true;
+
         const month = parseInt(match[1]);
         const year = 2000 + parseInt(match[2]);
         const now = new Date();
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
+
         if (month < 1 || month > 12 || year < currentYear || (year === currentYear && month < currentMonth)) {
             error.textContent = "❌ Expired card date.";
             return false;

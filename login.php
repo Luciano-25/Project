@@ -14,23 +14,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        $entered_password = MD5($password);  // Hash the entered password
-        
-        if ($entered_password === $user['password']) {  // Compare hashed passwords
+        $entered_password = MD5($password);  // Match stored hash
+
+        if ($entered_password === $user['password']) {
+            // Set session
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_type'] = $user['user_type'];
-            
-            if ($user['user_type'] == 'admin') {
+            $_SESSION['role'] = $user['role'];
+
+            // Redirect based on role
+            if ($user['role'] == 'superadmin') {
+                header("Location: Superadmin/superadmin_dashboard.php");
+            } elseif ($user['user_type'] == 'admin') {
                 header("Location: Admin/admin_dashboard.php");
             } else {
                 header("Location: index.php");
             }
+            exit();
         } else {
-            $error = "Invalid password";
+            $error = "Invalid password.";
         }
     } else {
-        $error = "User not found";
+        $error = "User not found.";
     }
 }
 ?>
@@ -67,12 +73,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="email" id="email" name="email" required>
                 </div>
                 <div class="form-group">
-    <label for="password">Password</label>
-    <div class="password-container">
-        <input type="password" id="password" name="password" required>
-        <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
-    </div>
-</div>
+                    <label for="password">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" required>
+                        <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
+                    </div>
+                </div>
                 <button type="submit" name="login" class="login-btn">Login</button>
             </form>
             <div class="register-link">
@@ -84,22 +90,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <footer class="footer">
         © 2025 BookHaven. All rights reserved.
     </footer>
-<script>
-function togglePassword(inputId) {
-    const input = document.getElementById(inputId);
-    const icon = input.nextElementSibling;
-    
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
-</script>
 
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

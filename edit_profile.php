@@ -23,11 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_email = trim($_POST['email']);
     $new_password = $_POST['password'];
 
-    // Basic validation
     if (empty($new_username) || empty($new_email)) {
         $error = "Username and email cannot be empty.";
     } else {
-        // Update query
         if (!empty($new_password)) {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
@@ -57,19 +55,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="profile.css">
     <style>
-        .edit-form input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        body {
+            background-color: #f4f6f8;
+        }
+
+        .profile-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header h1 {
+            font-size: 26px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .profile-header p {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
         .edit-form label {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
             display: block;
+            margin-bottom: 6px;
+        }
+
+        .edit-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .edit-form input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
         }
 
         .edit-profile-btn {
@@ -77,33 +108,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: white;
             padding: 12px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
-            width: 100%;
-            max-width: 200px;
-            margin-top: 10px;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .edit-profile-btn:hover {
             background-color: #2980b9;
         }
 
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .back-link i {
+            margin-right: 6px;
+        }
+
+        .back-link:hover {
+            color: #1f6dbb;
+        }
+
+        .error, .success-message {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
         .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+            background-color: #fcebea;
+            color: #cc1f1a;
         }
 
         .success-message {
             background-color: #d4edda;
             color: #155724;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
         }
     </style>
 </head>
@@ -113,36 +164,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="profile-container">
     <div class="profile-header">
-        <div class="profile-info">
-            <h1>Edit Profile</h1>
-            <p>You can update your account details here.</p>
-        </div>
+        <h1>Edit Profile</h1>
+        <p>You can update your username, email, or password here.</p>
     </div>
 
-    <div class="profile-content">
-        <?php if ($error): ?>
-            <div class="error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        <?php if ($success): ?>
-            <div class="success-message"><?php echo $success; ?></div>
-        <?php endif; ?>
+    <?php if ($error): ?>
+        <div class="error"><?php echo $error; ?></div>
+    <?php endif; ?>
+    <?php if ($success): ?>
+        <div class="success-message"><?php echo $success; ?></div>
+    <?php endif; ?>
 
-        <form method="POST" class="edit-form">
-            <div class="profile-section">
-                <label for="username">Username:</label>
-                <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
-            </div>
-            <div class="profile-section">
-                <label for="email">Email:</label>
-                <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
-            </div>
-            <div class="profile-section">
-                <label for="password">New Password (leave blank to keep current):</label>
-                <input type="password" name="password">
-            </div>
-            <button type="submit" class="edit-profile-btn"><i class="fas fa-save"></i> Update Profile</button>
-        </form>
-    </div>
+    <form method="POST" class="edit-form">
+        <label for="username">Username</label>
+        <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+
+        <label for="email">Email</label>
+        <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+
+        <label for="password">New Password <small>(leave blank to keep current)</small></label>
+        <input type="password" name="password">
+
+        <button type="submit" class="edit-profile-btn">
+            <i class="fas fa-save"></i> Update Profile
+        </button>
+    </form>
+
+    <a href="profile.php" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Profile
+    </a>
 </div>
 
 <?php include 'footer.php'; ?>

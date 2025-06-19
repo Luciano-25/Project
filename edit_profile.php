@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch user data
+// Get current user info
 $stmt = $conn->prepare("SELECT username, email, password FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -41,19 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $success = "Profile updated successfully!";
             echo "<script>
-                setTimeout(function() {
-                    window.location.href = 'profile.php';
-                }, 2000);
+                alert('Profile updated successfully!');
+                window.location.href = 'profile.php';
             </script>";
+            exit();
         } else {
             $error = "Failed to update profile. Please try again.";
         }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,105 +59,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Edit Profile - BookHaven</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="profile.css">
     <style>
-        body {
-            background-color: #f4f6f8;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .profile-container {
-            width: 100%;
-            min-height: 100vh;
-            padding: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .profile-card {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 700px;
-        }
-
-        .profile-header h1 {
-            font-size: 32px;
-            color: #2c3e50;
-            margin-bottom: 8px;
-        }
-
-        .profile-header p {
-            color: #000;
-            font-size: 15px;
-            margin-bottom: 25px;
-        }
-
-        .edit-form label {
-            font-weight: 600;
-            color: #2c3e50;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .edit-form input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #fafafa;
-        }
-
         .password-wrapper {
             position: relative;
         }
 
+        .password-wrapper input {
+            padding-right: 40px;
+        }
+
         .toggle-password {
             position: absolute;
+            right: 12px;
             top: 12px;
-            right: 15px;
             cursor: pointer;
             color: #888;
-        }
-
-        .edit-profile-btn {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 22px;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .edit-profile-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 25px;
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-        }
-
-        .back-link i {
-            margin-right: 6px;
-        }
-
-        .back-link:hover {
-            color: #1f6dbb;
         }
 
         .error, .success-message {
@@ -193,9 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        <?php if ($success): ?>
-            <div class="success-message"><?php echo $success; ?></div>
         <?php endif; ?>
 
         <form method="POST" class="edit-form">
@@ -232,12 +144,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
     document.querySelectorAll('.toggle-password').forEach(icon => {
-        icon.addEventListener('click', () => {
-            const input = document.querySelector(icon.getAttribute('toggle'));
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+        icon.addEventListener('click', function () {
+            const target = document.querySelector(this.getAttribute('toggle'));
+            const type = target.getAttribute('type') === 'password' ? 'text' : 'password';
+            target.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
         });
     });
 </script>

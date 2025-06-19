@@ -72,8 +72,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: block;
         }
 
-        .edit-form button {
+        .edit-profile-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
             width: 100%;
+            max-width: 200px;
+            margin-top: 10px;
+        }
+
+        .edit-profile-btn:hover {
+            background-color: #2980b9;
         }
 
         .error {
@@ -126,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="password">New Password (leave blank to keep current):</label>
                 <input type="password" name="password">
             </div>
-            <button type="submit" class="mark-received-btn">Update Profile</button>
+            <button type="submit" class="edit-profile-btn"><i class="fas fa-save"></i> Update Profile</button>
         </form>
     </div>
 </div>

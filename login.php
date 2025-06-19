@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirect based on role
             if ($user['role'] == 'superadmin') {
-                header("Location: Admin/superadmin_dashboard.php"); // ✅ FIXED PATH
+                header("Location: Superadmin/superadmin_dashboard.php"); // ✅ FIXED PATH
             } elseif ($user['user_type'] == 'admin') {
                 header("Location: Admin/admin_dashboard.php");
             } else {

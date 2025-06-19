@@ -2,8 +2,8 @@
 session_start();
 require_once '../config.php';
 
-// Protect this page
-if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin' || $_SESSION['role'] !== 'superadmin') {
+// Access control: superadmin only
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
     header("Location: ../login.php");
     exit();
 }
@@ -19,42 +19,44 @@ if (isset($_POST['add_admin'])) {
     $stmt = $conn->prepare("INSERT INTO users (full_name, username, email, phone, password, user_type, role) VALUES (?, ?, ?, ?, ?, 'admin', 'admin')");
     $stmt->bind_param("sssss", $full_name, $username, $email, $phone, $password);
     $stmt->execute();
-    $success = "New admin added successfully!";
+    $success = "✅ New admin added successfully!";
 }
 
-// Reset password
-if (isset($_POST['reset_password'])) {
-    $new_pass = md5($_POST['new_password']);
-    $admin_id = $_POST['admin_id'];
-    $stmt = $conn->prepare("UPDATE users SET password=? WHERE id=?");
-    $stmt->bind_param("si", $new_pass, $admin_id);
-    $stmt->execute();
-    $success = "Password reset successfully.";
-}
-
-// Edit admin info
+// Edit admin
 if (isset($_POST['edit_admin'])) {
     $id = $_POST['admin_id'];
     $full_name = $_POST['edit_full_name'];
     $email = $_POST['edit_email'];
     $phone = $_POST['edit_phone'];
-    $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=?");
+
+    $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=? AND role='admin'");
     $stmt->bind_param("sssi", $full_name, $email, $phone, $id);
     $stmt->execute();
-    $success = "Admin info updated.";
+    $success = "✅ Admin info updated.";
 }
 
-// Delete admin
+// Reset password
+if (isset($_POST['reset_password'])) {
+    $admin_id = $_POST['admin_id'];
+    $new_pass = md5($_POST['new_password']);
+
+    $stmt = $conn->prepare("UPDATE users SET password=? WHERE id=? AND role='admin'");
+    $stmt->bind_param("si", $new_pass, $admin_id);
+    $stmt->execute();
+    $success = "✅ Password reset successfully.";
+}
+
+// Delete admin (not superadmin)
 if (isset($_POST['delete_admin'])) {
     $id = $_POST['admin_id'];
     $stmt = $conn->prepare("DELETE FROM users WHERE id=? AND role != 'superadmin'");
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    $success = "Admin deleted.";
+    $success = "🗑️ Admin deleted.";
 }
 
 // Get all admins
-$admins = $conn->query("SELECT * FROM users WHERE user_type='admin'");
+$admins = $conn->query("SELECT * FROM users WHERE user_type = 'admin'");
 ?>
 
 <!DOCTYPE html>
@@ -79,13 +81,13 @@ $admins = $conn->query("SELECT * FROM users WHERE user_type='admin'");
 <?php include 'superadmin_header.php'; ?>
 
 <div class="container">
-    <h2>Manage Admins</h2>
+    <h2>👤 Manage Admins</h2>
 
     <?php if (isset($success)): ?>
         <div class="success"><?= $success ?></div>
     <?php endif; ?>
 
-    <h3>Add New Admin</h3>
+    <h3>➕ Add New Admin</h3>
     <form method="POST">
         <input type="text" name="full_name" placeholder="Full Name" required>
         <input type="text" name="username" placeholder="Username" required>
@@ -95,7 +97,7 @@ $admins = $conn->query("SELECT * FROM users WHERE user_type='admin'");
         <button type="submit" name="add_admin">Add Admin</button>
     </form>
 
-    <h3>All Admins</h3>
+    <h3>📋 Admin List</h3>
     <table>
         <tr>
             <th>Full Name</th>
@@ -111,23 +113,28 @@ $admins = $conn->query("SELECT * FROM users WHERE user_type='admin'");
                 <td><?= htmlspecialchars($admin['phone']) ?></td>
                 <td><?= $admin['role'] ?></td>
                 <td>
+                    <!-- Edit Form -->
                     <form method="POST" style="display:inline-block;">
                         <input type="hidden" name="admin_id" value="<?= $admin['id'] ?>">
                         <input type="text" name="edit_full_name" value="<?= $admin['full_name'] ?>" required>
-                        <input type="text" name="edit_email" value="<?= $admin['email'] ?>" required>
+                        <input type="email" name="edit_email" value="<?= $admin['email'] ?>" required>
                         <input type="text" name="edit_phone" value="<?= $admin['phone'] ?>" required>
                         <button type="submit" name="edit_admin" class="btn-edit">Save</button>
                     </form>
+
+                    <!-- Reset Password -->
                     <form method="POST" style="display:inline-block;">
                         <input type="hidden" name="admin_id" value="<?= $admin['id'] ?>">
                         <input type="password" name="new_password" placeholder="New Password" required>
                         <button type="submit" name="reset_password" class="btn-reset">Reset</button>
                     </form>
+
+                    <!-- Delete -->
                     <?php if ($admin['role'] !== 'superadmin'): ?>
-                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete this admin?');" style="display:inline-block;">
-                        <input type="hidden" name="admin_id" value="<?= $admin['id'] ?>">
-                        <button type="submit" name="delete_admin" class="btn-danger">Delete</button>
-                    </form>
+                        <form method="POST" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this admin?');">
+                            <input type="hidden" name="admin_id" value="<?= $admin['id'] ?>">
+                            <button type="submit" name="delete_admin" class="btn-danger">Delete</button>
+                        </form>
                     <?php endif; ?>
                 </td>
             </tr>

@@ -146,22 +146,6 @@ for ($m = 1; $m <= 12; $m++) {
   </div>
 
   <div class="section">
-    <h3>📦 Recent Orders</h3>
-    <table class="recent-table">
-      <tr><th>User</th><th>Book</th><th>Total (RM)</th><th>Status</th><th>Date</th></tr>
-      <?php while ($row = $recent_orders->fetch_assoc()): ?>
-        <tr>
-          <td><?= htmlspecialchars($row['username']) ?></td>
-          <td><?= htmlspecialchars($row['book_title']) ?> ×<?= $row['quantity'] ?></td>
-          <td><?= number_format($row['total_price'], 2) ?></td>
-          <td><?= htmlspecialchars($row['status']) ?></td>
-          <td><?= date('d M Y', strtotime($row['created_at'])) ?></td>
-        </tr>
-      <?php endwhile; ?>
-    </table>
-  </div>
-
-  <div class="section">
     <h3>📊 Monthly Revenue Chart</h3>
     <canvas id="revenueChart" width="600" height="300"></canvas>
     <script>

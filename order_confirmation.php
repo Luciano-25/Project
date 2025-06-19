@@ -57,7 +57,6 @@ $review_link = "review.php?book_id=" . $order['book_id'];
                 <p><strong>Book:</strong> <?= htmlspecialchars($order['book_title']) ?></p>
                 <p><strong>Quantity:</strong> <?= $order['quantity'] ?></p>
                 <p><strong>Total Price:</strong> RM <?= number_format($order['total_price'], 2) ?></p>
-                <p><strong>Status:</strong> <?= ucfirst($order['status']) ?></p>
                 <p><strong>Order Date:</strong> <?= date("F j, Y, g:i a", strtotime($order['created_at'])) ?></p>
             </div>
 

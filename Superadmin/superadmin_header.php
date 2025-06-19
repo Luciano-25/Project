@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="admin_header.css">
+    <link rel="stylesheet" href="../Admin/admin_header.css">
 </head>
 <body>
     <header class="top-header">

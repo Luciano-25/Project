@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['password'];
 
     if (empty($new_username) || empty($new_email) || empty($current_password_input)) {
-        $error = "All fields including your current password are required.";
+        $error = "Username, email, and current password are required.";
     } elseif (!password_verify($current_password_input, $user['password'])) {
         $error = "Current password is incorrect.";
     } elseif (!empty($new_password) && password_verify($new_password, $user['password'])) {
@@ -58,20 +58,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="profile.css">
     <style>
-        /* [Style omitted for brevity, keep your existing CSS here] */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #f4f6f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-        .password-strength {
+        .profile-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 50px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #f4f6f8;
+        }
+
+        .profile-card {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .profile-header h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .profile-header p {
+            color: #000;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+
+        .edit-form label {
+            font-weight: 600;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .edit-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            background-color: #fafafa;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .edit-form input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+            background-color: #fff;
+        }
+
+        .edit-profile-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-profile-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .back-link i {
+            margin-right: 6px;
+        }
+
+        .back-link:hover {
+            color: #1f6dbb;
+        }
+
+        .error, .success-message {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .error {
+            background-color: #fcebea;
+            color: #cc1f1a;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        #password-strength {
             font-size: 13px;
             margin-top: -15px;
             margin-bottom: 10px;
         }
 
-        .weak {
-            color: red;
-        }
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 20px;
+            }
 
-        .strong {
-            color: green;
+            .profile-card {
+                padding: 25px;
+            }
         }
     </style>
 </head>
@@ -101,8 +221,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" name="current_password" required>
 
             <label for="password">New Password <small>(leave blank to keep current)</small></label>
-            <input type="password" id="password" name="password" oninput="checkStrength()">
-            <div id="strengthMessage" class="password-strength"></div>
+            <input type="password" id="password" name="password" oninput="checkPasswordStrength()">
+            <div id="password-strength"></div>
 
             <button type="submit" class="edit-profile-btn">
                 <i class="fas fa-save"></i> Update Profile
@@ -118,11 +238,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'footer.php'; ?>
 
 <script>
-function checkStrength() {
+function checkPasswordStrength() {
     const password = document.getElementById("password").value;
-    const message = document.getElementById("strengthMessage");
+    const message = document.getElementById("password-strength");
 
-    if (password.length === 0) {
+    if (password === '') {
         message.textContent = '';
         return;
     }
@@ -130,16 +250,17 @@ function checkStrength() {
     const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
     if (!strongRegex.test(password)) {
-        message.textContent = "Password should be at least 8 characters with uppercase, lowercase, and a number.";
-        message.className = "password-strength weak";
+        message.textContent = "Password must be at least 8 characters with uppercase, lowercase, and a number.";
+        message.style.color = "red";
     } else {
         message.textContent = "Strong password.";
-        message.className = "password-strength strong";
+        message.style.color = "green";
     }
 }
 
 function validateForm() {
     const password = document.getElementById("password").value;
+
     if (password.length > 0) {
         const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
         if (!strongRegex.test(password)) {

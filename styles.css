@@ -1358,4 +1358,17 @@ a.stat-link:hover .stat-card {
     margin-top: 4px;
 }
 
+.card-icons i {
+    font-size: 1.5em;
+    opacity: 0.3;
+    transition: opacity 0.2s ease-in-out;
+    margin-right: 6px;
+    color: #888;
+}
+
+.card-icons i.active {
+    opacity: 1;
+    color: #007bff; /* Blue highlight for the active icon */
+}
+
 }

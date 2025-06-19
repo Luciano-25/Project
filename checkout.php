@@ -2,11 +2,13 @@
 session_start();
 require_once 'config.php';
 
+// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
+// Get cart items
 $cart_items = [];
 if (!empty($_SESSION['cart'])) {
     $ids = implode(',', array_keys($_SESSION['cart']));
@@ -19,6 +21,7 @@ if (!empty($_SESSION['cart'])) {
     }
 }
 
+// Calculate totals
 $subtotal = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
@@ -26,6 +29,7 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
 
+// Get user info
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -102,14 +106,13 @@ $user = $stmt->get_result()->fetch_assoc();
                         <div class="form-group">
                             <label for="card_number">Card Number</label>
                             <div class="card-input-container">
-                                <input type="text" id="card_number" name="card_number" maxlength="19" required>
+                                <input type="text" id="card_number" name="card_number" maxlength="16" required>
                                 <div class="card-icons">
                                     <i class="fab fa-cc-visa"></i>
                                     <i class="fab fa-cc-mastercard"></i>
                                     <i class="fab fa-cc-amex"></i>
                                 </div>
                             </div>
-                            <small id="card-error" style="color: red;"></small>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -119,7 +122,7 @@ $user = $stmt->get_result()->fetch_assoc();
                             </div>
                             <div class="form-group">
                                 <label for="cvv">CVV</label>
-                                <input type="text" id="cvv" name="cvv" maxlength="4" required>
+                                <input type="text" id="cvv" name="cvv" maxlength="3" required>
                             </div>
                         </div>
                     </div>
@@ -169,7 +172,6 @@ $user = $stmt->get_result()->fetch_assoc();
     <script>
     document.getElementById('card_number').addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '');
-        document.getElementById('card-error').textContent = '';
     });
 
     document.getElementById('expiry').addEventListener('input', function () {
@@ -201,31 +203,7 @@ $user = $stmt->get_result()->fetch_assoc();
         return true;
     }
 
-    function luhnCheck(cardNumber) {
-        const digits = cardNumber.replace(/\D/g, '').split('').reverse().map(Number);
-        let sum = 0;
-        for (let i = 0; i < digits.length; i++) {
-            let digit = digits[i];
-            if (i % 2 === 1) {
-                digit *= 2;
-                if (digit > 9) digit -= 9;
-            }
-            sum += digit;
-        }
-        return sum % 10 === 0;
-    }
-
     document.getElementById("checkoutForm").addEventListener("submit", function (e) {
-        const cardNumber = document.getElementById("card_number").value;
-        const errorMsg = document.getElementById("card-error");
-        errorMsg.textContent = '';
-
-        if (!luhnCheck(cardNumber)) {
-            e.preventDefault();
-            errorMsg.textContent = "❌ Invalid card number.";
-            return;
-        }
-
         if (!validateExpiry()) {
             e.preventDefault();
         }

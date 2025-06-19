@@ -1,6 +1,8 @@
 <?php
+session_start();
 include '../config.php';
 include 'admin_header.php';
+require_once 'log_helper.php'; // ✅ Include logging
 
 // Handle inline update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
@@ -11,7 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
 
     $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=?");
     $stmt->bind_param("sssi", $fullname, $email, $phone, $id);
-    $stmt->execute();
+    if ($stmt->execute()) {
+        log_admin_action($conn, $_SESSION['user_id'], "Updated customer info: ID $id");
+    }
 }
 
 // Handle deletion
@@ -19,7 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
     $id = $_POST['user_id'];
     $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
     $stmt->bind_param("i", $id);
-    $stmt->execute();
+    if ($stmt->execute()) {
+        log_admin_action($conn, $_SESSION['user_id'], "Deleted customer: ID $id");
+    }
 }
 
 // Get search query
@@ -34,6 +40,7 @@ if ($search) {
     $customers = $conn->query("SELECT * FROM users WHERE user_type != 'admin' ORDER BY created_at DESC");
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

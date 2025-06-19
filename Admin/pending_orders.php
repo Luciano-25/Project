@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once 'log_helper.php'; // ✅ Include logging helper
 
 // Handle mark as completed
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
@@ -9,6 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
     $stmt->bind_param("i", $order_id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "Order #$order_id marked as completed.";
+
+        // ✅ Log action
+        log_admin_action($conn, $_SESSION['user_id'], "Marked order #$order_id as completed.");
     } else {
         $_SESSION['error'] = "Failed to update order.";
     }
@@ -24,6 +28,7 @@ $sql = "SELECT o.*, u.username
         ORDER BY o.created_at DESC";
 $result = $conn->query($sql);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

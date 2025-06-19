@@ -1,5 +1,7 @@
 <?php
+session_start();
 include '../config.php';
+include 'log_helper.php'; // ✅ Include logging helper
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
@@ -8,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price = $_POST['price'];
     $stock = $_POST['stock'];
     $genre = $_POST['genre'];
-    $rating = 0; // Default rating - no manual input
+    $rating = 0;
 
     if (!empty($_FILES['image']['name'])) {
         $target_dir = "../Images/";
@@ -23,11 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $sql = "INSERT INTO books (title, author, description, price, stock, image_url, rating, genre) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssdisds", $title, $author, $description, $price, $stock, $image_url, $rating, $genre);
 
     if ($stmt->execute()) {
+        // ✅ Log the admin action
+        log_admin_action($conn, $_SESSION['user_id'], "Added new book: $title");
+
         header("Location: view_books.php");
         exit();
     }

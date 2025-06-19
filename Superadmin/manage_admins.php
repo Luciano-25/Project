@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../config.php';
+require_once 'log_helper.php'; // ✅ Add logging helper
 
 // Access control
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
@@ -19,6 +20,10 @@ if (isset($_POST['add_admin'])) {
     $stmt = $conn->prepare("INSERT INTO users (full_name, username, email, phone, password, user_type, role) VALUES (?, ?, ?, ?, ?, 'admin', 'admin')");
     $stmt->bind_param("sssss", $full_name, $username, $email, $phone, $password);
     $stmt->execute();
+
+    // ✅ Log
+    log_admin_action($conn, $_SESSION['user_id'], "Added new admin: $username");
+
     $success = "✅ New admin added successfully!";
 }
 
@@ -32,6 +37,10 @@ if (isset($_POST['edit_admin'])) {
     $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=? AND role='admin'");
     $stmt->bind_param("sssi", $full_name, $email, $phone, $id);
     $stmt->execute();
+
+    // ✅ Log
+    log_admin_action($conn, $_SESSION['user_id'], "Updated admin ID #$id");
+
     $success = "✅ Admin info updated.";
 }
 
@@ -43,6 +52,10 @@ if (isset($_POST['reset_password'])) {
     $stmt = $conn->prepare("UPDATE users SET password=? WHERE id=? AND role='admin'");
     $stmt->bind_param("si", $new_pass, $admin_id);
     $stmt->execute();
+
+    // ✅ Log
+    log_admin_action($conn, $_SESSION['user_id'], "Reset password for admin ID #$admin_id");
+
     $success = "✅ Password reset successfully.";
 }
 
@@ -52,12 +65,17 @@ if (isset($_POST['delete_admin'])) {
     $stmt = $conn->prepare("DELETE FROM users WHERE id=? AND role != 'superadmin'");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+
+    // ✅ Log
+    log_admin_action($conn, $_SESSION['user_id'], "Deleted admin ID #$id");
+
     $success = "🗑️ Admin deleted.";
 }
 
 // Get admins
 $admins = $conn->query("SELECT * FROM users WHERE user_type = 'admin'");
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

@@ -1,6 +1,7 @@
 <?php
 include '../config.php';
 include 'superadmin_header.php';
+include 'log_helper.php'; // ✅ Logging helper
 
 // Handle inline update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
@@ -12,6 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=?");
     $stmt->bind_param("sssi", $fullname, $email, $phone, $id);
     $stmt->execute();
+
+    // ✅ Log update
+    log_admin_action($conn, $_SESSION['user_id'], "Updated customer info (ID: $id, Name: $fullname)");
 }
 
 // Handle deletion
@@ -20,6 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user'])) {
     $stmt = $conn->prepare("DELETE FROM users WHERE id=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
+
+    // ✅ Log deletion
+    log_admin_action($conn, $_SESSION['user_id'], "Deleted customer (ID: $id)");
 }
 
 // Get search query

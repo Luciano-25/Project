@@ -1,5 +1,5 @@
 <?php include 'header.php'; ?>
-<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="styles.css">
 
 <div class="form-container">
     <a href="index.php" class="back-link">&larr; Back to Home</a>

@@ -83,8 +83,15 @@ $orders = $stmt->get_result();
         }
         .leave-review-btn {
             background-color: #3498db;
+            text-decoration: underline;
+            font-weight: bold;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        .mark-received-btn:hover {
+        .mark-received-btn:hover,
+        .leave-review-btn:hover {
             opacity: 0.9;
         }
         .no-orders {
@@ -98,24 +105,36 @@ $orders = $stmt->get_result();
             margin-bottom: 15px;
             border-radius: 5px;
         }
-        /* Modal Styling */
-        #invoiceModal {
+        /* Invoice Popup */
+        .invoice-popup {
             display: none;
             position: fixed;
-            top: 10%;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             background: white;
-            border: 1px solid #ccc;
-            border-radius: 10px;
+            border: 2px solid #ccc;
             padding: 20px;
-            z-index: 9999;
-            max-width: 500px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            width: 400px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
         }
-        #invoiceModal button {
-            margin-top: 10px;
-            margin-right: 10px;
+        .invoice-popup h3 {
+            margin-top: 0;
+        }
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+        .popup-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
@@ -175,8 +194,9 @@ $orders = $stmt->get_result();
                                     </form>
                                 <?php else: ?>
                                     <a href="book_details.php?id=<?php echo $order['book_id']; ?>#review-form" class="mark-received-btn leave-review-btn">Leave a Review</a>
-                                    <button class="mark-received-btn leave-review-btn" onclick='showInvoice(<?php echo json_encode($order); ?>)'>View Invoice</button>
                                 <?php endif; ?>
+
+                                <button class="mark-received-btn leave-review-btn" onclick='showInvoice(<?php echo json_encode($order); ?>)'>View Invoice</button>
                             </div>
                         </div>
                     <?php endwhile; ?>
@@ -188,52 +208,53 @@ $orders = $stmt->get_result();
     </div>
 </div>
 
-<!-- Invoice Modal -->
-<div id="invoiceModal">
+<!-- Popup Overlay & Invoice Box -->
+<div class="popup-overlay" onclick="closeInvoice()"></div>
+<div class="invoice-popup" id="invoicePopup">
     <h3>Invoice</h3>
     <div id="invoiceContent"></div>
-    <button onclick="printInvoice()" class="mark-received-btn leave-review-btn">Print</button>
-    <button onclick="closeInvoice()" class="mark-received-btn" style="background-color:#e74c3c;">Close</button>
+    <div class="popup-buttons">
+        <button onclick="printInvoice()">Print</button>
+        <button onclick="closeInvoice()">Close</button>
+    </div>
 </div>
 
 <?php include 'footer.php'; ?>
 
 <script>
-function toggleDetails(header) {
-    const details = header.nextElementSibling;
-    details.style.display = (details.style.display === 'block') ? 'none' : 'block';
-}
+    function toggleDetails(header) {
+        const details = header.nextElementSibling;
+        details.style.display = (details.style.display === 'block') ? 'none' : 'block';
+    }
 
-function showInvoice(order) {
-    const modal = document.getElementById('invoiceModal');
-    const content = document.getElementById('invoiceContent');
-    content.innerHTML = `
-        <p><strong>Order ID:</strong> ${order.id}</p>
-        <p><strong>Book Title:</strong> ${order.book_title}</p>
-        <p><strong>Quantity:</strong> ${order.quantity}</p>
-        <p><strong>Unit Price:</strong> RM ${parseFloat(order.unit_price).toFixed(2)}</p>
-        <p><strong>Total Price:</strong> RM ${parseFloat(order.total_price).toFixed(2)}</p>
-        <p><strong>Shipping Address:</strong> ${order.shipping_address}, ${order.shipping_city}, ${order.shipping_postal_code}</p>
-        <p><strong>Status:</strong> ${order.status}</p>
-        <p><strong>Order Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
-    `;
-    modal.style.display = 'block';
-}
+    function showInvoice(order) {
+        const invoiceHtml = `
+            <p><strong>Invoice ID:</strong> INV-${order.id}</p>
+            <p><strong>Book:</strong> ${order.book_title}</p>
+            <p><strong>Quantity:</strong> ${order.quantity}</p>
+            <p><strong>Unit Price:</strong> RM ${parseFloat(order.unit_price).toFixed(2)}</p>
+            <p><strong>Total Price:</strong> RM ${parseFloat(order.total_price).toFixed(2)}</p>
+            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+            <p><strong>Shipping Address:</strong> ${order.shipping_address}, ${order.shipping_city}, ${order.shipping_postal_code}</p>
+        `;
+        document.getElementById('invoiceContent').innerHTML = invoiceHtml;
+        document.getElementById('invoicePopup').style.display = 'block';
+        document.querySelector('.popup-overlay').style.display = 'block';
+    }
 
-function closeInvoice() {
-    document.getElementById('invoiceModal').style.display = 'none';
-}
+    function closeInvoice() {
+        document.getElementById('invoicePopup').style.display = 'none';
+        document.querySelector('.popup-overlay').style.display = 'none';
+    }
 
-function printInvoice() {
-    const content = document.getElementById('invoiceContent').innerHTML;
-    const printWindow = window.open('', '', 'width=600,height=600');
-    printWindow.document.write('<html><head><title>Invoice</title></head><body>');
-    printWindow.document.write('<h3>BookHaven Invoice</h3>');
-    printWindow.document.write(content);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-}
+    function printInvoice() {
+        const printContents = document.getElementById('invoiceContent').innerHTML;
+        const originalContents = document.body.innerHTML;
+        document.body.innerHTML = `<h3>Invoice</h3>${printContents}`;
+        window.print();
+        document.body.innerHTML = originalContents;
+        location.reload(); // refresh after print
+    }
 </script>
 </body>
 </html>

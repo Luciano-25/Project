@@ -31,6 +31,20 @@ $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
+
+// Autofill shipping info from shipping_info table
+$shipping_info = [
+    'address' => '',
+    'city' => '',
+    'postal_code' => ''
+];
+$shipStmt = $conn->prepare("SELECT address, city, postal_code FROM shipping_info WHERE user_id = ? LIMIT 1");
+$shipStmt->bind_param("i", $user_id);
+$shipStmt->execute();
+$shipResult = $shipStmt->get_result();
+if ($shipResult->num_rows > 0) {
+    $shipping_info = $shipResult->fetch_assoc();
+}
 ?>
 
 <!DOCTYPE html>
@@ -95,15 +109,15 @@ $user = $stmt->get_result()->fetch_assoc();
                         </div>
                         <div class="form-group">
                             <label for="address">Address</label>
-                            <input type="text" id="address" name="shipping_address" required>
+                            <input type="text" id="address" name="shipping_address" required value="<?php echo htmlspecialchars($shipping_info['address'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="city">City</label>
-                            <input type="text" id="city" name="shipping_city" required>
+                            <input type="text" id="city" name="shipping_city" required value="<?php echo htmlspecialchars($shipping_info['city'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="postal">Postal Code</label>
-                            <input type="text" id="postal" name="shipping_postal_code" required>
+                            <input type="text" id="postal" name="shipping_postal_code" required value="<?php echo htmlspecialchars($shipping_info['postal_code'] ?? ''); ?>">
                         </div>
                     </div>
 

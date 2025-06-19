@@ -55,40 +55,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="profile.css">
     <style>
-        body {
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%;
+            width: 100%;
             background-color: #f4f6f8;
             font-family: Arial, sans-serif;
         }
 
         .profile-container {
             width: 100%;
-            min-height: 100vh;
-            padding: 40px 60px;
+            height: 100%;
+            padding: 30px 50px;
             box-sizing: border-box;
-            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            background-color: #fff;
         }
 
         .profile-header h1 {
-            font-size: 32px;
+            font-size: 30px;
             color: #2c3e50;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .profile-header p {
-            color: #666;
-            font-size: 15px;
-            margin-bottom: 30px;
+            color: #000; /* changed from gray to black */
+            font-size: 14px;
+            margin-bottom: 25px;
         }
 
         .edit-form {
             max-width: 600px;
+            width: 100%;
         }
 
         .edit-form label {
             font-weight: 600;
-            color: #34495e;
+            color: #2c3e50;
             display: block;
             margin-bottom: 6px;
         }
@@ -96,11 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .edit-form input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 15px;
-            transition: 0.3s;
         }
 
         .edit-form input:focus {
@@ -118,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -130,12 +134,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .back-link {
             display: inline-block;
-            margin-top: 30px;
+            margin-top: 25px;
             color: #3498db;
             text-decoration: none;
             font-weight: 500;
             font-size: 15px;
-            transition: color 0.3s;
         }
 
         .back-link i {
@@ -166,10 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         @media (max-width: 768px) {
             .profile-container {
                 padding: 20px;
-            }
-
-            .edit-form {
-                width: 100%;
             }
         }
     </style>

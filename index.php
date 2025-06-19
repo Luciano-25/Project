@@ -88,12 +88,15 @@ $staff_picks = $conn->query($sql_staff);
 
         <div class="footer-section">
             <h3>Connect With Us</h3>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-pinterest"></i></a>
-            </div>
+            <div class="social-links"> 
+                 <a href="https://www.facebook.com/BookHavenBooks/" target="_blank" rel="noopener noreferrer">
+                 <i class="fab fa-facebook"></i>
+                 </a>
+                    <a href="https://www.instagram.com/bookhaven.td/?hl=en" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-instagram"></i>
+                 </a>
+        </div>
+
         </div>
     </div>
     <div class="footer-bottom">

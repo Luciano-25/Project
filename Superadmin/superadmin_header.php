@@ -15,6 +15,7 @@
                 <a href="pending_orders.php">Pending Orders</a>
                 <a href="view_sales.php"><i class="fas fa-chart-line"></i> Sales Report</a>
                 <a href="manage_admins.php"><i class="fas fa-user-shield"></i> Manage Admins</a>
+                <a href="view_logs.php"><i class="fas fa-clipboard-list"></i> View Logs</a>
                 <div class="nav-right">
                     <a href="../logout.php" class="logout-link">
                         <i class="fas fa-sign-out-alt"></i> Logout

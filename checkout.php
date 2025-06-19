@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Get cart items
 $cart_items = [];
 if (!empty($_SESSION['cart'])) {
     $ids = implode(',', array_keys($_SESSION['cart']));
@@ -19,6 +20,7 @@ if (!empty($_SESSION['cart'])) {
     }
 }
 
+// Calculate total
 $subtotal = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
@@ -26,6 +28,7 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
 
+// Get user details
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -95,15 +98,15 @@ $user = $stmt->get_result()->fetch_assoc();
                         </div>
                         <div class="form-group">
                             <label for="address">Address</label>
-                            <input type="text" id="address" name="shipping_address" required>
+                            <input type="text" id="address" name="shipping_address" required value="<?php echo htmlspecialchars($user['shipping_address'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="city">City</label>
-                            <input type="text" id="city" name="shipping_city" required>
+                            <input type="text" id="city" name="shipping_city" required value="<?php echo htmlspecialchars($user['shipping_city'] ?? ''); ?>">
                         </div>
                         <div class="form-group">
                             <label for="postal">Postal Code</label>
-                            <input type="text" id="postal" name="shipping_postal_code" required>
+                            <input type="text" id="postal" name="shipping_postal_code" required value="<?php echo htmlspecialchars($user['shipping_postal_code'] ?? ''); ?>">
                         </div>
                     </div>
 
@@ -257,4 +260,3 @@ $user = $stmt->get_result()->fetch_assoc();
     </script>
 </body>
 </html>
-

@@ -1,25 +1,30 @@
 <?php include 'header.php'; ?>
 <link rel="stylesheet" href="home.css">
 
-<div class="static-page">
+<div class="form-container">
     <a href="index.php" class="back-link">&larr; Back to Home</a>
-    <h1>Returns & Refunds Policy</h1>
+    <h1 class="form-title">Returns Policy</h1>
 
-    <h3>Returns</h3>
-    <p>Books can be returned within 14 days of delivery. Items must be unused and in original condition.</p>
+    <div class="static-section">
+        <p>We want you to be fully satisfied with your purchase. If for any reason you're not happy, here's our return process:</p>
 
-    <h3>Refunds</h3>
-    <p>Refunds are processed within 5-7 business days after we receive and inspect the returned item.</p>
+        <h3>Eligibility for Returns:</h3>
+        <ul>
+            <li>Items must be returned within 7 days of delivery.</li>
+            <li>Books must be unused, in original condition.</li>
+            <li>Damaged or wrong items are eligible for free returns or replacements.</li>
+        </ul>
 
-    <h3>Return Process</h3>
-    <ul>
-        <li>Contact our support team at <a href="contact2.php">Contact Us</a></li>
-        <li>Ship the item back to our return address</li>
-        <li>Wait for confirmation and refund processing</li>
-    </ul>
+        <h3>How to Return:</h3>
+        <ol>
+            <li>Email us at <strong>support@bookhaven.com</strong> with your order ID and reason for return.</li>
+            <li>We’ll respond with return instructions within 24–48 hours.</li>
+            <li>Pack the item securely and ship it back to our return address.</li>
+        </ol>
 
-    <h3>Non-Returnable Items</h3>
-    <p>Clearance books, eBooks, and gift cards are non-returnable.</p>
+        <h3>Refunds:</h3>
+        <p>Once we receive and inspect the returned item, refunds will be processed within 5–7 business days to your original payment method.</p>
+    </div>
 </div>
 
 <?php include 'footer.php'; ?>

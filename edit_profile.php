@@ -9,18 +9,20 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Fetch user data
 $stmt = $conn->prepare("SELECT username, email, password FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+$success = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_username = trim($_POST['username']);
     $new_email = trim($_POST['email']);
-    $current_password_input = $_POST['current_password'];
     $new_password = $_POST['password'];
+    $current_password_input = $_POST['current_password'];
 
     if (empty($new_username) || empty($new_email) || empty($current_password_input)) {
         $error = "Username, email, and current password are required.";
@@ -39,9 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $_SESSION['success'] = "Profile updated successfully!";
-            header("Location: profile.php");
-            exit();
+            $success = "Profile updated successfully!";
+            echo "<script>
+                setTimeout(function() {
+                    window.location.href = 'profile.php';
+                }, 2000);
+            </script>";
         } else {
             $error = "Failed to update profile. Please try again.";
         }
@@ -56,13 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Edit Profile - BookHaven</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="profile.css">
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
+        body {
             background-color: #f4f6f8;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -71,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             width: 100%;
             min-height: 100vh;
             padding: 50px;
-            box-sizing: border-box;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -113,14 +112,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 6px;
             font-size: 15px;
             background-color: #fafafa;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .edit-form input:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
-            background-color: #fff;
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            cursor: pointer;
+            color: #888;
         }
 
         .edit-profile-btn {
@@ -136,7 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: background-color 0.3s ease;
         }
 
         .edit-profile-btn:hover {
@@ -176,39 +178,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #d4edda;
             color: #155724;
         }
-
-        #password-strength {
-            font-size: 13px;
-            margin-top: -15px;
-            margin-bottom: 10px;
-        }
-
-        .password-wrapper {
-            position: relative;
-        }
-
-        .password-wrapper input {
-            padding-right: 40px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 12px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #666;
-        }
-
-        @media (max-width: 768px) {
-            .profile-container {
-                padding: 20px;
-            }
-
-            .profile-card {
-                padding: 25px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -222,11 +191,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>You can update your username, email, or password here.</p>
         </div>
 
-        <?php if (!empty($error)): ?>
+        <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="success-message"><?php echo $success; ?></div>
+        <?php endif; ?>
 
-        <form method="POST" class="edit-form" onsubmit="return validateForm()">
+        <form method="POST" class="edit-form">
             <label for="username">Username</label>
             <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
 
@@ -236,15 +208,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="current_password">Current Password</label>
             <div class="password-wrapper">
                 <input type="password" name="current_password" id="current_password" required>
-                <i class="fa fa-eye-slash toggle-password" toggle="#current_password"></i>
+                <i class="fas fa-eye toggle-password" toggle="#current_password"></i>
             </div>
 
             <label for="password">New Password <small>(leave blank to keep current)</small></label>
             <div class="password-wrapper">
-                <input type="password" id="password" name="password" oninput="checkPasswordStrength()">
-                <i class="fa fa-eye-slash toggle-password" toggle="#password"></i>
+                <input type="password" name="password" id="new_password">
+                <i class="fas fa-eye toggle-password" toggle="#new_password"></i>
             </div>
-            <div id="password-strength"></div>
 
             <button type="submit" class="edit-profile-btn">
                 <i class="fas fa-save"></i> Update Profile
@@ -260,54 +231,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'footer.php'; ?>
 
 <script>
-function checkPasswordStrength() {
-    const password = document.getElementById("password").value;
-    const message = document.getElementById("password-strength");
-
-    if (password === '') {
-        message.textContent = '';
-        return;
-    }
-
-    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-
-    if (!strongRegex.test(password)) {
-        message.textContent = "Password must be at least 8 characters with uppercase, lowercase, and a number.";
-        message.style.color = "red";
-    } else {
-        message.textContent = "Strong password.";
-        message.style.color = "green";
-    }
-}
-
-function validateForm() {
-    const password = document.getElementById("password").value;
-
-    if (password.length > 0) {
-        const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-        if (!strongRegex.test(password)) {
-            alert("Your new password is not strong enough.");
-            return false;
-        }
-    }
-    return true;
-}
-
-// Toggle password visibility
-document.querySelectorAll(".toggle-password").forEach(icon => {
-    icon.addEventListener("click", function () {
-        const target = document.querySelector(this.getAttribute("toggle"));
-        if (target.type === "password") {
-            target.type = "text";
-            this.classList.remove("fa-eye-slash");
-            this.classList.add("fa-eye");
-        } else {
-            target.type = "password";
-            this.classList.remove("fa-eye");
-            this.classList.add("fa-eye-slash");
-        }
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+        icon.addEventListener('click', () => {
+            const input = document.querySelector(icon.getAttribute('toggle'));
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
     });
-});
 </script>
 
 </body>

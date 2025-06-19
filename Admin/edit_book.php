@@ -3,6 +3,14 @@ session_start();
 require_once '../config.php';
 require_once 'log_helper.php'; // ✅ Include logging
 
+// Redirect if not logged in
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+$admin_id = $_SESSION['user_id'] ?? null;
+
 if (isset($_GET['id'])) {
     $book_id = $_GET['id'];
     $sql = "SELECT * FROM books WHERE id = ?";
@@ -10,6 +18,12 @@ if (isset($_GET['id'])) {
     $stmt->bind_param("i", $book_id);
     $stmt->execute();
     $book = $stmt->get_result()->fetch_assoc();
+
+    if (!$book) {
+        die("Book not found.");
+    }
+} else {
+    die("Book ID missing.");
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -46,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     image_url = ?
                     WHERE id = ?";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssdisii", $title, $author, $description, $price, $stock, $genre, $image_url, $book_id);
+            $stmt->bind_param("sssdissi", $title, $author, $description, $price, $stock, $genre, $image_url, $book_id);
         }
     } else {
         $sql = "UPDATE books SET 
@@ -62,14 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        // ✅ Log action
-        log_admin_action($conn, $_SESSION['user_id'], "Edited book: {$title} (ID {$book_id})");
+        // ✅ Log the action if admin_id is available
+        if ($admin_id !== null) {
+            log_admin_action($conn, $admin_id, "Edited book: {$title} (ID: {$book_id})");
+        }
+
         header("Location: view_books.php");
         exit();
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">

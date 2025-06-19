@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_SESSION['
     $title = trim($_POST['title']);
     $text = trim($_POST['review_text']);
 
-    // Only allow if order is completed
     $order_check = $conn->prepare("SELECT id FROM orders WHERE user_id = ? AND book_id = ? AND status = 'Order Completed' LIMIT 1");
     $order_check->bind_param("ii", $user_id, $book_id);
     $order_check->execute();
@@ -150,8 +149,10 @@ $reviews = $reviews_stmt->get_result();
                     <div class="quantity-selector">
                         <label for="quantity">Quantity:</label>
                         <select name="quantity" id="quantity">
-                            <?php for ($i = 1; $i <= 5; $i++): ?>
-                                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                            <?php
+                                $maxQty = ($book['stock'] < 50) ? 1 : 5;
+                                for ($i = 1; $i <= $maxQty; $i++): ?>
+                                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                             <?php endfor; ?>
                         </select>
                     </div>
@@ -164,11 +165,8 @@ $reviews = $reviews_stmt->get_result();
         </div>
     </div>
 
-    <!-- Review Section -->
     <div class="reviews-section" id="review-form">
         <h2>Customer Reviews</h2>
-
-        <!-- Sort Form -->
         <form class="sort-form" method="GET">
             <input type="hidden" name="id" value="<?php echo $book_id; ?>">
             <label for="sort">Sort by:</label>
@@ -197,7 +195,6 @@ $reviews = $reviews_stmt->get_result();
             <p>No reviews yet. Be the first to write one!</p>
         <?php endif; ?>
 
-        <!-- Review Form -->
         <?php if ($user_id): ?>
             <div class="review-form">
                 <h3><?php echo $existing_review ? 'Edit Your Review' : 'Leave a Review'; ?></h3>
@@ -225,4 +222,3 @@ $reviews = $reviews_stmt->get_result();
 <?php include 'footer.php'; ?>
 </body>
 </html>
-

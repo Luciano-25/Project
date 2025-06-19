@@ -1,5 +1,7 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
+require_once 'log_helper.php'; // ✅ Include logging
 
 if (isset($_GET['id'])) {
     $book_id = $_GET['id'];
@@ -60,11 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
+        // ✅ Log action
+        log_admin_action($conn, $_SESSION['user_id'], "Edited book: {$title} (ID {$book_id})");
         header("Location: view_books.php");
         exit();
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

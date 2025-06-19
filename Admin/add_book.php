@@ -1,5 +1,7 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
+require_once 'log_helper.php'; // ✅ include logging helper
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'];
@@ -28,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("sssdisds", $title, $author, $description, $price, $stock, $image_url, $rating, $genre);
 
     if ($stmt->execute()) {
+        // ✅ Log the action
+        log_admin_action($conn, $_SESSION['user_id'], "Added new book: $title");
         header("Location: view_books.php");
         exit();
     }

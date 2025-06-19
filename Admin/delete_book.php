@@ -1,32 +1,37 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
+require_once 'log_helper.php'; // ✅ Include logging helper
 
 if (isset($_GET['id'])) {
     $book_id = $_GET['id'];
-    
-    // First get the image path to delete the file
-    $sql = "SELECT image_url FROM books WHERE id = ?";
+
+    // Get image path and title
+    $sql = "SELECT image_url, title FROM books WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $book_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $book = $result->fetch_assoc();
-    
-    // Delete the image file
-    if ($book['image_url']) {
-        $image_path = "../" . $book['image_url'];
-        if (file_exists($image_path)) {
-            unlink($image_path);
-        }
-    }
 
-    // ✅ Do NOT delete orders — let book_id become NULL
-    
-    // Delete the book
-    $delete_book = "DELETE FROM books WHERE id = ?";
-    $stmt = $conn->prepare($delete_book);
-    $stmt->bind_param("i", $book_id);
-    $stmt->execute();
+    if ($book) {
+        // Delete image file
+        if ($book['image_url']) {
+            $image_path = "../" . $book['image_url'];
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
+        }
+
+        // Delete book record
+        $delete_sql = "DELETE FROM books WHERE id = ?";
+        $stmt = $conn->prepare($delete_sql);
+        $stmt->bind_param("i", $book_id);
+        $stmt->execute();
+
+        // ✅ Log deletion
+        log_admin_action($conn, $_SESSION['user_id'], "Deleted book: {$book['title']} (ID {$book_id})");
+    }
 }
 
 header("Location: view_books.php");

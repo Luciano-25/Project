@@ -85,7 +85,7 @@ $orders = $stmt->get_result();
             background-color: #3498db;
         }
         .mark-received-btn:hover {
-            background-color: #219150;
+            opacity: 0.9;
         }
         .no-orders {
             font-style: italic;
@@ -97,6 +97,25 @@ $orders = $stmt->get_result();
             color: #155724;
             margin-bottom: 15px;
             border-radius: 5px;
+        }
+        /* Modal Styling */
+        #invoiceModal {
+            display: none;
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 9999;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #invoiceModal button {
+            margin-top: 10px;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -156,6 +175,7 @@ $orders = $stmt->get_result();
                                     </form>
                                 <?php else: ?>
                                     <a href="book_details.php?id=<?php echo $order['book_id']; ?>#review-form" class="mark-received-btn leave-review-btn">Leave a Review</a>
+                                    <button class="mark-received-btn leave-review-btn" onclick='showInvoice(<?php echo json_encode($order); ?>)'>View Invoice</button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -168,13 +188,52 @@ $orders = $stmt->get_result();
     </div>
 </div>
 
+<!-- Invoice Modal -->
+<div id="invoiceModal">
+    <h3>Invoice</h3>
+    <div id="invoiceContent"></div>
+    <button onclick="printInvoice()" class="mark-received-btn leave-review-btn">Print</button>
+    <button onclick="closeInvoice()" class="mark-received-btn" style="background-color:#e74c3c;">Close</button>
+</div>
+
 <?php include 'footer.php'; ?>
 
 <script>
-    function toggleDetails(header) {
-        const details = header.nextElementSibling;
-        details.style.display = (details.style.display === 'block') ? 'none' : 'block';
-    }
+function toggleDetails(header) {
+    const details = header.nextElementSibling;
+    details.style.display = (details.style.display === 'block') ? 'none' : 'block';
+}
+
+function showInvoice(order) {
+    const modal = document.getElementById('invoiceModal');
+    const content = document.getElementById('invoiceContent');
+    content.innerHTML = `
+        <p><strong>Order ID:</strong> ${order.id}</p>
+        <p><strong>Book Title:</strong> ${order.book_title}</p>
+        <p><strong>Quantity:</strong> ${order.quantity}</p>
+        <p><strong>Unit Price:</strong> RM ${parseFloat(order.unit_price).toFixed(2)}</p>
+        <p><strong>Total Price:</strong> RM ${parseFloat(order.total_price).toFixed(2)}</p>
+        <p><strong>Shipping Address:</strong> ${order.shipping_address}, ${order.shipping_city}, ${order.shipping_postal_code}</p>
+        <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>Order Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+    `;
+    modal.style.display = 'block';
+}
+
+function closeInvoice() {
+    document.getElementById('invoiceModal').style.display = 'none';
+}
+
+function printInvoice() {
+    const content = document.getElementById('invoiceContent').innerHTML;
+    const printWindow = window.open('', '', 'width=600,height=600');
+    printWindow.document.write('<html><head><title>Invoice</title></head><body>');
+    printWindow.document.write('<h3>BookHaven Invoice</h3>');
+    printWindow.document.write(content);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
 </script>
 </body>
 </html>

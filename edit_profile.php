@@ -56,28 +56,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="profile.css">
     <style>
         body {
+            margin: 0;
+            padding: 0;
             background-color: #f4f6f8;
+            font-family: Arial, sans-serif;
         }
 
         .profile-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: #fff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            min-height: 100vh;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            background-color: #ffffff;
         }
 
         .profile-header h1 {
-            font-size: 26px;
+            font-size: 32px;
             color: #2c3e50;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .profile-header p {
-            color: #777;
-            font-size: 14px;
-            margin-bottom: 20px;
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .edit-form {
+            max-width: 600px;
         }
 
         .edit-form label {
@@ -124,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .back-link {
             display: inline-block;
-            margin-top: 25px;
+            margin-top: 30px;
             color: #3498db;
             text-decoration: none;
             font-weight: 500;
@@ -155,6 +161,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .success-message {
             background-color: #d4edda;
             color: #155724;
+        }
+
+        @media (max-width: 768px) {
+            .profile-container {
+                padding: 20px;
+            }
+
+            .edit-form {
+                width: 100%;
+            }
         }
     </style>
 </head>

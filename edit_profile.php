@@ -163,14 +163,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #155724;
         }
         .password-toggle {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #999;
-        }
-
+            position: absolute;
+            right: 15px;
+            top: 38px;
+            cursor: pointer;
+            color: #999;
         }
         .password-wrapper {
             position: relative;

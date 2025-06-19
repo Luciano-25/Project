@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch current user data
-$stmt = $conn->prepare("SELECT username, email FROM users WHERE id = ?");
+$stmt = $conn->prepare("SELECT username, email, password FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -21,10 +21,14 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_username = trim($_POST['username']);
     $new_email = trim($_POST['email']);
+    $current_password_input = $_POST['current_password'];
     $new_password = $_POST['password'];
 
-    if (empty($new_username) || empty($new_email)) {
-        $error = "Username and email cannot be empty.";
+    // Check required fields
+    if (empty($new_username) || empty($new_email) || empty($current_password_input)) {
+        $error = "All fields including your current password are required.";
+    } elseif (!password_verify($current_password_input, $user['password'])) {
+        $error = "Current password is incorrect.";
     } else {
         if (!empty($new_password)) {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
@@ -36,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $success = "Profile updated successfully!";
-            $user['username'] = $new_username;
-            $user['email'] = $new_email;
+            $_SESSION['success'] = "Profile updated successfully!";
+            header("Location: profile.php");
+            exit();
         } else {
             $error = "Failed to update profile. Please try again.";
         }
@@ -72,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            background-color: #f4f6f8;
         }
 
         .profile-card {
@@ -111,13 +114,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 6px;
             font-size: 15px;
             background-color: #fafafa;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .edit-form input:focus {
             border-color: #3498db;
             outline: none;
-            box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
             background-color: #fff;
         }
 
@@ -134,7 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             gap: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: background-color 0.3s ease;
         }
 
         .edit-profile-btn:hover {
@@ -150,10 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 15px;
         }
 
-        .back-link i {
-            margin-right: 6px;
-        }
-
         .back-link:hover {
             color: #1f6dbb;
         }
@@ -163,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 6px;
             margin-bottom: 20px;
             font-size: 14px;
+            animation: fadeOut 4s forwards;
         }
 
         .error {
@@ -173,6 +170,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .success-message {
             background-color: #d4edda;
             color: #155724;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .toggle-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+        }
+
+        @keyframes fadeOut {
+            0% {opacity: 1;}
+            75% {opacity: 1;}
+            100% {opacity: 0; display: none;}
         }
 
         @media (max-width: 768px) {
@@ -194,14 +210,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="profile-card">
         <div class="profile-header">
             <h1>Edit Profile</h1>
-            <p>You can update your username, email, or password here.</p>
+            <p>Update your username, email, and password.</p>
         </div>
 
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        <?php if ($success): ?>
-            <div class="success-message"><?php echo $success; ?></div>
         <?php endif; ?>
 
         <form method="POST" class="edit-form">
@@ -212,7 +225,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
 
             <label for="password">New Password <small>(leave blank to keep current)</small></label>
-            <input type="password" name="password">
+            <div class="password-toggle">
+                <input type="password" name="password" id="new-password">
+                <i class="fas fa-eye toggle-icon" onclick="togglePassword('new-password', this)"></i>
+            </div>
+
+            <label for="current_password">Current Password <small>(required to confirm changes)</small></label>
+            <div class="password-toggle">
+                <input type="password" name="current_password" id="current-password" required>
+                <i class="fas fa-eye toggle-icon" onclick="togglePassword('current-password', this)"></i>
+            </div>
 
             <button type="submit" class="edit-profile-btn">
                 <i class="fas fa-save"></i> Update Profile
@@ -226,6 +248,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <?php include 'footer.php'; ?>
+
+<script>
+function togglePassword(id, icon) {
+    const input = document.getElementById(id);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+</script>
 
 </body>
 </html>

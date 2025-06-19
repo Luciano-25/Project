@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Returns Policy - BookHaven</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Replace with home.css if needed -->
+    <link rel="stylesheet" href="styles.css"> <!-- Use home.css if that's your active one -->
 </head>
 <body>
     <main class="static-page">
+        <a href="index.php" class="back-link">← Back to Home</a>
+
         <h1>Returns & Refunds Policy</h1>
 
         <p>We want you to be happy with your purchase. You may return any item within 14 days of receiving your order, as long as the book is in its original condition.</p>

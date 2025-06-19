@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>FAQ - BookHaven</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Replace with home.css if needed -->
+    <link rel="stylesheet" href="styles.css"> <!-- Use home.css if that's your active one -->
 </head>
 <body>
     <main class="static-page">
+        <a href="index.php" class="back-link">← Back to Home</a>
+
         <h1>Frequently Asked Questions</h1>
 
         <h3>1. How do I place an order?</h3>

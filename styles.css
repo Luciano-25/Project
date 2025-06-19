@@ -1372,3 +1372,49 @@ a.stat-link:hover .stat-card {
 }
 
 }
+/* Page Content Layout: Contact, FAQ, Returns */
+.form-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-title {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.static-section h3 {
+    color: #2c3e50;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.static-section p,
+.static-section li {
+    font-size: 16px;
+    color: #555;
+    margin: 8px 0;
+}
+
+.static-section ul,
+.static-section ol {
+    padding-left: 20px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #3498db;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}

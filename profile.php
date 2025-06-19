@@ -83,9 +83,16 @@ $orders = $stmt->get_result();
         }
         .leave-review-btn {
             background-color: #3498db;
+            text-decoration: underline;
+            font-weight: bold;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        .mark-received-btn:hover {
-            background-color: #219150;
+        .mark-received-btn:hover,
+        .leave-review-btn:hover {
+            opacity: 0.9;
         }
         .no-orders {
             font-style: italic;
@@ -97,6 +104,37 @@ $orders = $stmt->get_result();
             color: #155724;
             margin-bottom: 15px;
             border-radius: 5px;
+        }
+        /* Invoice Popup */
+        .invoice-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #ccc;
+            padding: 20px;
+            z-index: 1000;
+            width: 400px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        .invoice-popup h3 {
+            margin-top: 0;
+        }
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+        .popup-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
     </style>
 </head>
@@ -157,6 +195,8 @@ $orders = $stmt->get_result();
                                 <?php else: ?>
                                     <a href="book_details.php?id=<?php echo $order['book_id']; ?>#review-form" class="mark-received-btn leave-review-btn">Leave a Review</a>
                                 <?php endif; ?>
+
+                                <button class="mark-received-btn leave-review-btn" onclick='showInvoice(<?php echo json_encode($order); ?>)'>View Invoice</button>
                             </div>
                         </div>
                     <?php endwhile; ?>
@@ -168,12 +208,52 @@ $orders = $stmt->get_result();
     </div>
 </div>
 
+<!-- Popup Overlay & Invoice Box -->
+<div class="popup-overlay" onclick="closeInvoice()"></div>
+<div class="invoice-popup" id="invoicePopup">
+    <h3>Invoice</h3>
+    <div id="invoiceContent"></div>
+    <div class="popup-buttons">
+        <button onclick="printInvoice()">Print</button>
+        <button onclick="closeInvoice()">Close</button>
+    </div>
+</div>
+
 <?php include 'footer.php'; ?>
 
 <script>
     function toggleDetails(header) {
         const details = header.nextElementSibling;
         details.style.display = (details.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function showInvoice(order) {
+        const invoiceHtml = `
+            <p><strong>Invoice ID:</strong> INV-${order.id}</p>
+            <p><strong>Book:</strong> ${order.book_title}</p>
+            <p><strong>Quantity:</strong> ${order.quantity}</p>
+            <p><strong>Unit Price:</strong> RM ${parseFloat(order.unit_price).toFixed(2)}</p>
+            <p><strong>Total Price:</strong> RM ${parseFloat(order.total_price).toFixed(2)}</p>
+            <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+            <p><strong>Shipping Address:</strong> ${order.shipping_address}, ${order.shipping_city}, ${order.shipping_postal_code}</p>
+        `;
+        document.getElementById('invoiceContent').innerHTML = invoiceHtml;
+        document.getElementById('invoicePopup').style.display = 'block';
+        document.querySelector('.popup-overlay').style.display = 'block';
+    }
+
+    function closeInvoice() {
+        document.getElementById('invoicePopup').style.display = 'none';
+        document.querySelector('.popup-overlay').style.display = 'none';
+    }
+
+    function printInvoice() {
+        const printContents = document.getElementById('invoiceContent').innerHTML;
+        const originalContents = document.body.innerHTML;
+        document.body.innerHTML = `<h3>Invoice</h3>${printContents}`;
+        window.print();
+        document.body.innerHTML = originalContents;
+        location.reload(); // refresh after print
     }
 </script>
 </body>

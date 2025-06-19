@@ -61,35 +61,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             height: 100%;
             width: 100%;
             background-color: #f4f6f8;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .profile-container {
             width: 100%;
-            height: 100%;
-            padding: 30px 50px;
+            min-height: 100vh;
+            padding: 50px;
             box-sizing: border-box;
             display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            background-color: #fff;
+            justify-content: center;
+            align-items: flex-start;
+            background-color: #f4f6f8;
+        }
+
+        .profile-card {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
         }
 
         .profile-header h1 {
-            font-size: 30px;
+            font-size: 32px;
             color: #2c3e50;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .profile-header p {
-            color: #000; /* changed from gray to black */
-            font-size: 14px;
+            color: #000;
+            font-size: 15px;
             margin-bottom: 25px;
-        }
-
-        .edit-form {
-            max-width: 600px;
-            width: 100%;
         }
 
         .edit-form label {
@@ -102,22 +106,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .edit-form input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 15px;
+            background-color: #fafafa;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .edit-form input:focus {
             border-color: #3498db;
             outline: none;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
+            background-color: #fff;
         }
 
         .edit-profile-btn {
             background-color: #3498db;
             color: white;
-            padding: 12px 20px;
+            padding: 12px 22px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
@@ -126,6 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease;
         }
 
         .edit-profile-btn:hover {
@@ -170,6 +179,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             .profile-container {
                 padding: 20px;
             }
+
+            .profile-card {
+                padding: 25px;
+            }
         }
     </style>
 </head>
@@ -178,36 +191,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'header.php'; ?>
 
 <div class="profile-container">
-    <div class="profile-header">
-        <h1>Edit Profile</h1>
-        <p>You can update your username, email, or password here.</p>
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1>Edit Profile</h1>
+            <p>You can update your username, email, or password here.</p>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="error"><?php echo $error; ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="success-message"><?php echo $success; ?></div>
+        <?php endif; ?>
+
+        <form method="POST" class="edit-form">
+            <label for="username">Username</label>
+            <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+
+            <label for="email">Email</label>
+            <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+
+            <label for="password">New Password <small>(leave blank to keep current)</small></label>
+            <input type="password" name="password">
+
+            <button type="submit" class="edit-profile-btn">
+                <i class="fas fa-save"></i> Update Profile
+            </button>
+        </form>
+
+        <a href="profile.php" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Profile
+        </a>
     </div>
-
-    <?php if ($error): ?>
-        <div class="error"><?php echo $error; ?></div>
-    <?php endif; ?>
-    <?php if ($success): ?>
-        <div class="success-message"><?php echo $success; ?></div>
-    <?php endif; ?>
-
-    <form method="POST" class="edit-form">
-        <label for="username">Username</label>
-        <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
-
-        <label for="email">Email</label>
-        <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
-
-        <label for="password">New Password <small>(leave blank to keep current)</small></label>
-        <input type="password" name="password">
-
-        <button type="submit" class="edit-profile-btn">
-            <i class="fas fa-save"></i> Update Profile
-        </button>
-    </form>
-
-    <a href="profile.php" class="back-link">
-        <i class="fas fa-arrow-left"></i> Back to Profile
-    </a>
 </div>
 
 <?php include 'footer.php'; ?>

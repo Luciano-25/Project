@@ -10,37 +10,40 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // Fetch current user data
-$sql = "SELECT username, email FROM users WHERE id = ?";
-$stmt = $conn->prepare($sql);
+$stmt = $conn->prepare("SELECT username, email FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+$user = $stmt->get_result()->fetch_assoc();
 
-// Handle form submission
+$success = '';
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_username = trim($_POST['username']);
     $new_email = trim($_POST['email']);
-    $new_password = trim($_POST['password']);
+    $new_password = $_POST['password'];
 
-    // Update query
-    if (!empty($new_password)) {
-        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-        $sql = "UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("sssi", $new_username, $new_email, $hashed_password, $user_id);
+    // Basic validation
+    if (empty($new_username) || empty($new_email)) {
+        $error = "Username and email cannot be empty.";
     } else {
-        $sql = "UPDATE users SET username = ?, email = ? WHERE id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssi", $new_username, $new_email, $user_id);
-    }
+        // Update query
+        if (!empty($new_password)) {
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
+            $stmt->bind_param("sssi", $new_username, $new_email, $hashed_password, $user_id);
+        } else {
+            $stmt = $conn->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
+            $stmt->bind_param("ssi", $new_username, $new_email, $user_id);
+        }
 
-    if ($stmt->execute()) {
-        $_SESSION['message'] = "Profile updated successfully!";
-        header("Location: profile.php");
-        exit();
-    } else {
-        $error = "Something went wrong. Please try again.";
+        if ($stmt->execute()) {
+            $success = "Profile updated successfully!";
+            $user['username'] = $new_username;
+            $user['email'] = $new_email;
+        } else {
+            $error = "Failed to update profile. Please try again.";
+        }
     }
 }
 ?>
@@ -49,53 +52,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Profile</title>
+    <title>Edit Profile - BookHaven</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="profile.css">
     <style>
-        .edit-container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-        }
-
-        .edit-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="email"], input[type="password"] {
+        .edit-form input {
             width: 100%;
-            padding: 8px;
-            margin-top: 6px;
-            margin-bottom: 16px;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
 
-        .btn {
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .edit-form label {
             font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
         }
 
-        .btn:hover {
-            background-color: #1a242f;
+        .edit-form button {
+            width: 100%;
         }
 
         .error {
-            color: red;
-            text-align: center;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
             margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -103,25 +97,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include 'header.php'; ?>
 
-<div class="edit-container">
-    <h2>Edit Profile</h2>
-    <?php if (isset($error)): ?>
-        <div class="error"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
-    <form method="POST">
-        <label for="username">Username</label>
-        <input type="text" name="username" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <h1>Edit Profile</h1>
+            <p>You can update your account details here.</p>
+        </div>
+    </div>
 
-        <label for="email">Email</label>
-        <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+    <div class="profile-content">
+        <?php if ($error): ?>
+            <div class="error"><?php echo $error; ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="success-message"><?php echo $success; ?></div>
+        <?php endif; ?>
 
-        <label for="password">New Password (leave blank to keep current)</label>
-        <input type="password" name="password" id="password" placeholder="Enter new password">
-
-        <button type="submit" class="btn">Update Profile</button>
-    </form>
+        <form method="POST" class="edit-form">
+            <div class="profile-section">
+                <label for="username">Username:</label>
+                <input type="text" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+            </div>
+            <div class="profile-section">
+                <label for="email">Email:</label>
+                <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            </div>
+            <div class="profile-section">
+                <label for="password">New Password (leave blank to keep current):</label>
+                <input type="password" name="password">
+            </div>
+            <button type="submit" class="mark-received-btn">Update Profile</button>
+        </form>
+    </div>
 </div>
 
 <?php include 'footer.php'; ?>
+
 </body>
 </html>

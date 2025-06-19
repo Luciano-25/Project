@@ -1,5 +1,16 @@
 <?php 
-include '../config.php';
+session_start();
+require_once '../config.php';
+
+// ✅ Block unauthorized access
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+// ✅ Load appropriate header
+$header_file = $_SESSION['role'] === 'superadmin' ? 'superadmin_header.php' : 'admin_header.php';
+include $header_file;
 
 // Initialize filter values
 $search_username = $_GET['username'] ?? '';
@@ -8,13 +19,13 @@ $search_date = $_GET['date'] ?? '';
 $search_start = $_GET['start_date'] ?? '';
 $search_end = $_GET['end_date'] ?? '';
 
-// Build dynamic WHERE clause
+// Build WHERE conditions dynamically
 $conditions = [];
 $params = [];
 $types = '';
 
 if ($search_username) {
-    $conditions[] = 'users.username LIKE ?';
+    $conditions[] = 'orders.username_snapshot LIKE ?';
     $params[] = "%$search_username%";
     $types .= 's';
 }
@@ -39,22 +50,21 @@ $where_sql = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
 // Sales query
 $sales_sql = "SELECT 
-                orders.id,
-                orders.book_id,
-                orders.book_title,
-                orders.quantity,
-                orders.total_amount,
-                orders.created_at AS sale_date,
-                orders.shipping_address,
-                orders.shipping_city,
-                orders.shipping_postal_code,
-                users.username,
-                IF(books.id IS NULL, 0, 1) AS book_exists
-            FROM orders
-            LEFT JOIN books ON orders.book_id = books.id
-            LEFT JOIN users ON orders.user_id = users.id
-            $where_sql
-            ORDER BY orders.created_at DESC";
+    orders.id,
+    orders.book_id,
+    orders.book_title,
+    orders.quantity,
+    orders.total_amount,
+    orders.created_at AS sale_date,
+    orders.shipping_address,
+    orders.shipping_city,
+    orders.shipping_postal_code,
+    orders.username_snapshot AS username,
+    IF(books.id IS NULL, 0, 1) AS book_exists
+FROM orders
+LEFT JOIN books ON orders.book_id = books.id
+$where_sql
+ORDER BY orders.created_at DESC";
 
 $stmt = $conn->prepare($sales_sql);
 if ($params) {
@@ -66,9 +76,7 @@ $sales_result = $stmt->get_result();
 // Revenue query
 $revenue_sql = "SELECT SUM(orders.total_amount) AS total_revenue
                 FROM orders
-                JOIN users ON orders.user_id = users.id
                 $where_sql";
-
 $rev_stmt = $conn->prepare($revenue_sql);
 if ($params) {
     $rev_stmt->bind_param($types, ...$params);
@@ -103,6 +111,7 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         }
         th { background-color: #2c3e50; color: #fff; }
         tr:hover { background-color: #f2f2f2; }
+
         .btn {
             padding: 10px 20px;
             border: none;
@@ -127,7 +136,15 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
             font-style: italic;
         }
 
-        /* Print styles */
+        .back-btn {
+            background-color: #95a5a6;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background-color: #7f8c8d;
+        }
+
         @media print {
             body * {
                 visibility: hidden;
@@ -141,19 +158,17 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
                 top: 0;
                 width: 100%;
             }
-            .print-btn, .filter-form {
+            .print-btn, .filter-form, .back-btn {
                 display: none !important;
             }
         }
     </style>
 </head>
 <body>
-<?php include 'admin_header.php'; ?>
 
 <div class="container">
-    <h2>Sales Report</h2>
+    <h2>📊 Sales Report</h2>
 
-    <!-- Filter Form -->
     <form method="get" class="filter-form">
         <input type="text" name="username" placeholder="Search by customer" value="<?= htmlspecialchars($search_username) ?>">
         <input type="text" name="book_title" placeholder="Search by book title" value="<?= htmlspecialchars($search_book) ?>">
@@ -167,15 +182,14 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         <label for="end_date">To:</label>
         <input type="date" name="end_date" id="end_date" value="<?= htmlspecialchars($search_end) ?>">
 
-        <button type="submit" class="btn print-btn">Filter</button>
+        <button type="submit" class="btn print-btn">Apply Filters</button>
     </form>
 
-    <!-- Wrap print area -->
     <div class="print-area">
-        <h3>Total Revenue</h3>
+        <h3>💰 Total Revenue</h3>
         <p><strong>RM <?= number_format($total_revenue, 2); ?></strong></p>
 
-        <h3>Sales Transactions</h3>
+        <h3>🧾 Sales Transactions</h3>
         <table>
             <tr>
                 <th>Customer</th>
@@ -189,7 +203,7 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
             </tr>
             <?php while ($row = $sales_result->fetch_assoc()): ?>
                 <tr>
-                    <td><?= htmlspecialchars($row['username'] ?? 'Deleted User') ?></td>
+                    <td><?= htmlspecialchars($row['username']) ?></td>
                     <td>
                         <?php
                         if (!$row['book_exists']) {
@@ -210,7 +224,8 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
         </table>
     </div>
 
-    <button class="btn print-btn" onclick="window.print()">Print Report</button><br><br>
+    <button class="btn print-btn" onclick="window.print()">🖨️ Print Report</button>
+    <a href="<?= $_SESSION['role'] === 'superadmin' ? 'superadmin_dashboard.php' : 'admin_dashboard.php' ?>" class="btn back-btn">← Back to Dashboard</a>
 </div>
 </body>
 </html>

@@ -204,24 +204,10 @@ $user = $stmt->get_result()->fetch_assoc();
     }
 
     document.getElementById("checkoutForm").addEventListener("submit", function (e) {
-        if (!validateExpiry()) e.preventDefault();
+        if (!validateExpiry()) {
+            e.preventDefault();
+        }
     });
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

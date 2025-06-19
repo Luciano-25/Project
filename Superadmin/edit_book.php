@@ -1,6 +1,7 @@
 <?php
 include '../config.php';
-include 'superadmin_header.php'; // ✅ Use superadmin header
+include 'superadmin_header.php';
+include 'log_helper.php'; // ✅ Logging helper
 
 if (isset($_GET['id'])) {
     $book_id = $_GET['id'];
@@ -18,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price = $_POST['price'];
     $stock = $_POST['stock'];
     $genre = $_POST['genre'];
+    $log_message = "";
 
     if (!empty($_FILES['image']['name'])) {
         // Delete old image
@@ -46,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("sssdissi", $title, $author, $description, $price, $stock, $genre, $image_url, $book_id);
+            $log_message = "Updated book with new image (ID: $book_id, Title: $title)";
         }
     } else {
         $sql = "UPDATE books SET 
@@ -58,10 +61,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("sssdisi", $title, $author, $description, $price, $stock, $genre, $book_id);
+        $log_message = "Updated book details (ID: $book_id, Title: $title)";
     }
 
     if ($stmt->execute()) {
-        header("Location: view_books.php"); 
+        // ✅ Log the action
+        log_admin_action($conn, $_SESSION['user_id'], $log_message);
+        header("Location: view_books.php");
         exit();
     }
 }

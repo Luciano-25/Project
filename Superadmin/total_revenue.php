@@ -1,10 +1,17 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
 
 $sql = "SELECT SUM(total_amount) AS total_revenue FROM orders";
 $result = $conn->query($sql);
 $row = $result->fetch_assoc();
-$total_revenue = $row['total_revenue'];
+$total_revenue = $row['total_revenue'] ?? 0;
+
+// Determine dashboard link based on role
+$dashboard_link = "admin_dashboard.php"; // default
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'superadmin') {
+    $dashboard_link = "superadmin_dashboard.php";
+}
 ?>
 
 <!DOCTYPE html>
@@ -63,8 +70,8 @@ $total_revenue = $row['total_revenue'];
 <body>
     <div class="revenue-box">
         <h3>Total Revenue</h3>
-        <div class="amount">RM <?php echo number_format($total_revenue, 2); ?></div>
-        <a href="admin_dashboard.php" class="back-btn">← Back to Dashboard</a>
+        <div class="amount">RM <?= number_format($total_revenue, 2); ?></div>
+        <a href="<?= $dashboard_link ?>" class="back-btn">← Back to Dashboard</a>
     </div>
 </body>
 </html>

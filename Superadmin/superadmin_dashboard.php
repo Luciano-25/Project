@@ -41,7 +41,7 @@ for ($m = 1; $m <= 12; $m++) {
   <meta charset="UTF-8">
   <title>Superadmin Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="admindash.css">
+  <link rel="stylesheet" href="../admindash.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     a.stat-link {

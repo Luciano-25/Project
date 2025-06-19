@@ -26,13 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($new_username) || empty($new_email)) {
         $error = "Username and email cannot be empty.";
-    } elseif (!password_verify($current_password_input, $user['password'])) {
+    } elseif (md5($current_password_input) !== $user['password']) {
         $error = "Current password is incorrect.";
-    } elseif (!empty($new_password) && password_verify($new_password, $user['password'])) {
+    } elseif (!empty($new_password) && md5($new_password) === $user['password']) {
         $error = "New password cannot be the same as the current password.";
     } else {
         if (!empty($new_password)) {
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $hashed_password = md5($new_password);
             $stmt = $conn->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
             $stmt->bind_param("sssi", $new_username, $new_email, $hashed_password, $user_id);
         } else {
@@ -49,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="profile.css">
     <style>
-        /* Your previous CSS preserved */
         html, body {
             margin: 0;
             padding: 0;

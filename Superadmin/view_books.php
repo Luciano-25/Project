@@ -1,9 +1,19 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
 
-// Handle search input
+// ✅ Access control
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'superadmin'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
+// ✅ Dynamic header file
+$header_file = $_SESSION['role'] === 'superadmin' ? 'superadmin_header.php' : 'admin_header.php';
+include $header_file;
+
+// ✅ Search handling
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-
 $sql = "SELECT id, title, author, price, stock, image_url, genre FROM books";
 
 if (!empty($search)) {
@@ -25,7 +35,10 @@ if (!empty($search)) {
     <meta charset="UTF-8">
     <title>Manage Books - Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="admin.css">
+    
+    <!-- ✅ Make sure the correct CSS is loaded -->
+    <link rel="stylesheet" href="../Admin/admin.css"> <!-- Or superadmin.css if you separate them -->
+
     <style>
         .genre-badge {
             padding: 4px 10px;
@@ -114,10 +127,42 @@ if (!empty($search)) {
             align-items: center;
             margin-bottom: 20px;
         }
+
+        .stock-display {
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .edit-btn, .delete-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .edit-btn {
+            background-color: #3b82f6;
+        }
+
+        .delete-btn {
+            background-color: #ef4444;
+        }
+
+        .edit-btn:hover,
+        .delete-btn:hover {
+            opacity: 0.85;
+        }
     </style>
 </head>
 <body>
-<?php include 'admin_header.php'; ?>
 
 <div class="books-container">
     <div class="header-actions">

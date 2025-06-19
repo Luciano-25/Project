@@ -25,7 +25,7 @@ $params = [];
 $types = '';
 
 if ($search_username) {
-    $conditions[] = 'users.username LIKE ?';
+    $conditions[] = 'orders.username_snapshot LIKE ?';
     $params[] = "%$search_username%";
     $types .= 's';
 }
@@ -50,22 +50,21 @@ $where_sql = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
 // Sales query
 $sales_sql = "SELECT 
-                orders.id,
-                orders.book_id,
-                orders.book_title,
-                orders.quantity,
-                orders.total_amount,
-                orders.created_at AS sale_date,
-                orders.shipping_address,
-                orders.shipping_city,
-                orders.shipping_postal_code,
-                users.username,
-                IF(books.id IS NULL, 0, 1) AS book_exists
-            FROM orders
-            LEFT JOIN books ON orders.book_id = books.id
-            JOIN users ON orders.user_id = users.id
-            $where_sql
-            ORDER BY orders.created_at DESC";
+    orders.id,
+    orders.book_id,
+    orders.book_title,
+    orders.quantity,
+    orders.total_amount,
+    orders.created_at AS sale_date,
+    orders.shipping_address,
+    orders.shipping_city,
+    orders.shipping_postal_code,
+    orders.username_snapshot AS username,
+    IF(books.id IS NULL, 0, 1) AS book_exists
+FROM orders
+LEFT JOIN books ON orders.book_id = books.id
+$where_sql
+ORDER BY orders.created_at DESC";
 
 $stmt = $conn->prepare($sales_sql);
 if ($params) {
@@ -77,7 +76,6 @@ $sales_result = $stmt->get_result();
 // Revenue query
 $revenue_sql = "SELECT SUM(orders.total_amount) AS total_revenue
                 FROM orders
-                JOIN users ON orders.user_id = users.id
                 $where_sql";
 $rev_stmt = $conn->prepare($revenue_sql);
 if ($params) {
@@ -147,7 +145,6 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
             background-color: #7f8c8d;
         }
 
-        /* Print styles */
         @media print {
             body * {
                 visibility: hidden;
@@ -172,7 +169,6 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
 <div class="container">
     <h2>📊 Sales Report</h2>
 
-    <!-- Filter Form -->
     <form method="get" class="filter-form">
         <input type="text" name="username" placeholder="Search by customer" value="<?= htmlspecialchars($search_username) ?>">
         <input type="text" name="book_title" placeholder="Search by book title" value="<?= htmlspecialchars($search_book) ?>">

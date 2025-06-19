@@ -52,7 +52,7 @@ $sales_sql = "SELECT
                 IF(books.id IS NULL, 0, 1) AS book_exists
             FROM orders
             LEFT JOIN books ON orders.book_id = books.id
-            JOIN users ON orders.user_id = users.id
+            LEFT JOIN users ON orders.user_id = users.id
             $where_sql
             ORDER BY orders.created_at DESC";
 
@@ -189,7 +189,7 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
             </tr>
             <?php while ($row = $sales_result->fetch_assoc()): ?>
                 <tr>
-                    <td><?= htmlspecialchars($row['username']) ?></td>
+                    <td><?= htmlspecialchars($row['username'] ?? 'Deleted User') ?></td>
                     <td>
                         <?php
                         if (!$row['book_exists']) {

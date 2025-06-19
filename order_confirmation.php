@@ -13,7 +13,15 @@ $sql = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 1"
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$order = $stmt->get_result()->fetch_assoc();
+$result = $stmt->get_result();
+$order = $result->fetch_assoc();
+
+// If no order is found, redirect or show a message
+if (!$order) {
+    $_SESSION['error'] = "No recent order found.";
+    header("Location: profile.php");
+    exit();
+}
 
 $review_link = "review.php?book_id=" . $order['book_id'];
 ?>
@@ -40,28 +48,27 @@ $review_link = "review.php?book_id=" . $order['book_id'];
 
             <div class="shipping-details">
                 <h3>Shipping To:</h3>
-                <p><?php echo htmlspecialchars($order['shipping_address']); ?></p>
-                <p><?php echo htmlspecialchars($order['shipping_city']); ?>, <?php echo htmlspecialchars($order['shipping_postal_code']); ?></p>
+                <p><?= htmlspecialchars($order['shipping_address']) ?></p>
+                <p><?= htmlspecialchars($order['shipping_city']) ?>, <?= htmlspecialchars($order['shipping_postal_code']) ?></p>
             </div>
 
             <div class="order-summary">
                 <h3>Order Summary</h3>
-                <p><strong>Book:</strong> <?php echo htmlspecialchars($order['book_title']); ?></p>
-                <p><strong>Quantity:</strong> <?php echo $order['quantity']; ?></p>
-                <p><strong>Total Price:</strong> RM <?php echo number_format($order['total_price'], 2); ?></p>
-                <p><strong>Status:</strong> <?php echo ucfirst($order['status']); ?></p>
-                <p><strong>Order Date:</strong> <?php echo date("F j, Y, g:i a", strtotime($order['created_at'])); ?></p>
+                <p><strong>Book:</strong> <?= htmlspecialchars($order['book_title']) ?></p>
+                <p><strong>Quantity:</strong> <?= $order['quantity'] ?></p>
+                <p><strong>Total Price:</strong> RM <?= number_format($order['total_price'], 2) ?></p>
+                <p><strong>Status:</strong> <?= ucfirst($order['status']) ?></p>
+                <p><strong>Order Date:</strong> <?= date("F j, Y, g:i a", strtotime($order['created_at'])) ?></p>
             </div>
 
-           <div class="review-prompt">
+            <div class="review-prompt">
                 <?php if ($order['status'] === 'Order Completed'): ?>
-                <p>You can now leave a review for this book!</p>
-                <a href="book_details.php?id=<?php echo $order['book_id']; ?>" class="review-btn">Leave a Review</a>
+                    <p>You can now leave a review for this book!</p>
+                    <a href="book_details.php?id=<?= $order['book_id'] ?>" class="review-btn">Leave a Review</a>
                 <?php else: ?>
-                <p><strong>Note:</strong> You can only leave a review after you mark your order as <em>"Received"</em> in your <a href="profile.php">order history</a>.</p>
+                    <p><strong>Note:</strong> You can only leave a review after you mark your order as <em>"Received"</em> in your <a href="profile.php">order history</a>.</p>
                 <?php endif; ?>
-           </div>
-
+            </div>
 
             <div class="confirmation-actions">
                 <a href="profile.php" class="view-order-btn">View Order History</a>

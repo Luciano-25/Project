@@ -2,13 +2,11 @@
 session_start();
 require_once 'config.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-// Get cart items
 $cart_items = [];
 if (!empty($_SESSION['cart'])) {
     $ids = implode(',', array_keys($_SESSION['cart']));
@@ -21,7 +19,6 @@ if (!empty($_SESSION['cart'])) {
     }
 }
 
-// Calculate totals
 $subtotal = 0;
 foreach ($cart_items as $item) {
     $subtotal += $item['price'] * $item['quantity'];
@@ -29,7 +26,6 @@ foreach ($cart_items as $item) {
 $tax = $subtotal * 0.08;
 $total = $subtotal + $tax;
 
-// Get user info
 $user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -50,6 +46,12 @@ $user = $stmt->get_result()->fetch_assoc();
             opacity: 0.3;
             transition: opacity 0.2s ease-in-out;
             margin-right: 6px;
+            color: #888;
+        }
+
+        .card-icons i.active {
+            opacity: 1;
+            color: #007bff;
         }
     </style>
 </head>
@@ -182,7 +184,6 @@ $user = $stmt->get_result()->fetch_assoc();
         let raw = this.value.replace(/\D/g, '').slice(0, 16);
         let formatted = raw.replace(/(.{4})/g, '$1 ').trim();
         this.value = formatted;
-
         highlightCardIcon(raw);
     });
 
@@ -191,18 +192,18 @@ $user = $stmt->get_result()->fetch_assoc();
         const mastercard = document.querySelector(".fa-cc-mastercard");
         const amex = document.querySelector(".fa-cc-amex");
 
-        visa.style.opacity = "0.3";
-        mastercard.style.opacity = "0.3";
-        amex.style.opacity = "0.3";
+        visa.classList.remove("active");
+        mastercard.classList.remove("active");
+        amex.classList.remove("active");
 
         if (/^4/.test(cardNumber)) {
-            visa.style.opacity = "1";
+            visa.classList.add("active");
             setCVVLength(3);
         } else if (/^5[1-5]/.test(cardNumber) || /^2[2-7]/.test(cardNumber)) {
-            mastercard.style.opacity = "1";
+            mastercard.classList.add("active");
             setCVVLength(3);
         } else if (/^3[47]/.test(cardNumber)) {
-            amex.style.opacity = "1";
+            amex.classList.add("active");
             setCVVLength(4);
         } else {
             setCVVLength(3);

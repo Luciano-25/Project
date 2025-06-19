@@ -2,7 +2,7 @@
 session_start();
 require_once '../config.php';
 
-// Access control: superadmin only
+// Access control
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
     header("Location: ../login.php");
     exit();
@@ -10,10 +10,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
 
 // Add new admin
 if (isset($_POST['add_admin'])) {
-    $full_name = $_POST['full_name'];
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $phone = $_POST['phone'];
+    $full_name = trim($_POST['full_name']);
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $phone = trim($_POST['phone']);
     $password = md5($_POST['password']);
 
     $stmt = $conn->prepare("INSERT INTO users (full_name, username, email, phone, password, user_type, role) VALUES (?, ?, ?, ?, ?, 'admin', 'admin')");
@@ -25,9 +25,9 @@ if (isset($_POST['add_admin'])) {
 // Edit admin
 if (isset($_POST['edit_admin'])) {
     $id = $_POST['admin_id'];
-    $full_name = $_POST['edit_full_name'];
-    $email = $_POST['edit_email'];
-    $phone = $_POST['edit_phone'];
+    $full_name = trim($_POST['edit_full_name']);
+    $email = trim($_POST['edit_email']);
+    $phone = trim($_POST['edit_phone']);
 
     $stmt = $conn->prepare("UPDATE users SET full_name=?, email=?, phone=? WHERE id=? AND role='admin'");
     $stmt->bind_param("sssi", $full_name, $email, $phone, $id);
@@ -46,7 +46,7 @@ if (isset($_POST['reset_password'])) {
     $success = "✅ Password reset successfully.";
 }
 
-// Delete admin (not superadmin)
+// Delete admin
 if (isset($_POST['delete_admin'])) {
     $id = $_POST['admin_id'];
     $stmt = $conn->prepare("DELETE FROM users WHERE id=? AND role != 'superadmin'");
@@ -55,7 +55,7 @@ if (isset($_POST['delete_admin'])) {
     $success = "🗑️ Admin deleted.";
 }
 
-// Get all admins
+// Get admins
 $admins = $conn->query("SELECT * FROM users WHERE user_type = 'admin'");
 ?>
 
@@ -71,7 +71,7 @@ $admins = $conn->query("SELECT * FROM users WHERE user_type = 'admin'");
         th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
         form { margin-bottom: 20px; }
         input, button { padding: 6px 10px; margin: 5px 0; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 6px 10px; }
+        .btn-danger { background: #e74c3c; color: white; border: none; }
         .btn-edit { background: #f1c40f; color: black; border: none; }
         .btn-reset { background: #3498db; color: white; border: none; }
         .success { background: #2ecc71; color: white; padding: 10px; margin-bottom: 10px; }
@@ -113,12 +113,12 @@ $admins = $conn->query("SELECT * FROM users WHERE user_type = 'admin'");
                 <td><?= htmlspecialchars($admin['phone']) ?></td>
                 <td><?= $admin['role'] ?></td>
                 <td>
-                    <!-- Edit Form -->
+                    <!-- Edit Admin -->
                     <form method="POST" style="display:inline-block;">
                         <input type="hidden" name="admin_id" value="<?= $admin['id'] ?>">
-                        <input type="text" name="edit_full_name" value="<?= $admin['full_name'] ?>" required>
-                        <input type="email" name="edit_email" value="<?= $admin['email'] ?>" required>
-                        <input type="text" name="edit_phone" value="<?= $admin['phone'] ?>" required>
+                        <input type="text" name="edit_full_name" value="<?= htmlspecialchars($admin['full_name']) ?>" required>
+                        <input type="email" name="edit_email" value="<?= htmlspecialchars($admin['email']) ?>" required>
+                        <input type="text" name="edit_phone" value="<?= htmlspecialchars($admin['phone']) ?>" required>
                         <button type="submit" name="edit_admin" class="btn-edit">Save</button>
                     </form>
 

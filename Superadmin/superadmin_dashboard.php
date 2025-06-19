@@ -1,6 +1,14 @@
 <?php
-include '../config.php';
+session_start();
+require_once '../config.php';
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'superadmin') {
+    header("Location: ../login.php");
+    exit();
+}
+
 include 'superadmin_header.php';
+
 
 // Get total books
 $books_result = $conn->query("SELECT COUNT(*) as total_books FROM books");
@@ -41,7 +49,7 @@ for ($m = 1; $m <= 12; $m++) {
   <meta charset="UTF-8">
   <title>Superadmin Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../admindash.css">
+  <link rel="stylesheet" href="../Admin/admindash.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     a.stat-link {

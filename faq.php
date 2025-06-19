@@ -16,6 +16,24 @@
 
     <h3>4. Do you offer international shipping?</h3>
     <p>Currently, we only ship within Malaysia.</p>
+
+    <h3>5. How long does delivery take?</h3>
+    <p>Delivery usually takes 3–5 working days for Peninsular Malaysia and 5–7 days for East Malaysia.</p>
+
+    <h3>6. Can I cancel my order?</h3>
+    <p>Orders can be cancelled before they are shipped. Please contact us immediately if you wish to cancel.</p>
+
+    <h3>7. Do I need an account to make a purchase?</h3>
+    <p>No, you can checkout as a guest. However, creating an account lets you track orders and manage your information easily.</p>
+
+    <h3>8. Are your books new or secondhand?</h3>
+    <p>All books listed on our website are brand new unless clearly stated otherwise.</p>
+
+    <h3>9. What should I do if I receive a damaged item?</h3>
+    <p>Please contact our support team with a photo of the damaged item within 3 days of receiving your order.</p>
+
+    <h3>10. Do you offer gift wrapping?</h3>
+    <p>Yes! You can request gift wrapping at checkout for a small additional fee.</p>
 </div>
 
 <?php include 'footer.php'; ?>

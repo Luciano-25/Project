@@ -75,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            background-color: #f4f6f8;
         }
 
         .profile-card {
@@ -184,6 +183,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 10px;
         }
 
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+
         @media (max-width: 768px) {
             .profile-container {
                 padding: 20px;
@@ -218,10 +234,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
 
             <label for="current_password">Current Password</label>
-            <input type="password" name="current_password" required>
+            <div class="password-wrapper">
+                <input type="password" name="current_password" id="current_password" required>
+                <i class="fa fa-eye-slash toggle-password" toggle="#current_password"></i>
+            </div>
 
             <label for="password">New Password <small>(leave blank to keep current)</small></label>
-            <input type="password" id="password" name="password" oninput="checkPasswordStrength()">
+            <div class="password-wrapper">
+                <input type="password" id="password" name="password" oninput="checkPasswordStrength()">
+                <i class="fa fa-eye-slash toggle-password" toggle="#password"></i>
+            </div>
             <div id="password-strength"></div>
 
             <button type="submit" class="edit-profile-btn">
@@ -270,6 +292,22 @@ function validateForm() {
     }
     return true;
 }
+
+// Toggle password visibility
+document.querySelectorAll(".toggle-password").forEach(icon => {
+    icon.addEventListener("click", function () {
+        const target = document.querySelector(this.getAttribute("toggle"));
+        if (target.type === "password") {
+            target.type = "text";
+            this.classList.remove("fa-eye-slash");
+            this.classList.add("fa-eye");
+        } else {
+            target.type = "password";
+            this.classList.remove("fa-eye");
+            this.classList.add("fa-eye-slash");
+        }
+    });
+});
 </script>
 
 </body>

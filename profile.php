@@ -1,18 +1,11 @@
 <?php
 session_start();
+require_once 'config.php';
 
-// 🔐 Redirect to login if user is not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
-// 🚫 Prevent back-button access after logout
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-
-require_once 'config.php';
 
 $user_id = $_SESSION['user_id'];
 
@@ -112,6 +105,7 @@ $orders = $stmt->get_result();
             margin-bottom: 15px;
             border-radius: 5px;
         }
+        /* Invoice Popup */
         .invoice-popup {
             display: none;
             position: fixed;
@@ -259,8 +253,9 @@ $orders = $stmt->get_result();
         document.body.innerHTML = `<h3>Invoice</h3>${printContents}`;
         window.print();
         document.body.innerHTML = originalContents;
-        location.reload();
+        location.reload(); // refresh after print
     }
 </script>
 </body>
 </html>
+

@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+// Prevent back-button access after logout
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 require_once 'config.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -38,6 +44,7 @@ $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $orders = $stmt->get_result();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -105,7 +112,6 @@ $orders = $stmt->get_result();
             margin-bottom: 15px;
             border-radius: 5px;
         }
-        /* Invoice Popup */
         .invoice-popup {
             display: none;
             position: fixed;
@@ -254,6 +260,11 @@ $orders = $stmt->get_result();
         window.print();
         document.body.innerHTML = originalContents;
         location.reload(); // refresh after print
+    }
+
+    // Force reload when using browser back button
+    if (performance.navigation.type === 2) {
+        location.reload(true);
     }
 </script>
 </body>

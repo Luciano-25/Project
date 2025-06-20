@@ -12,22 +12,36 @@ $error = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
+    // Password strength validation
     if (!preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
         $error = "Password must be at least 8 characters, include an uppercase letter and a number.";
     } else {
-        $hashed_password = md5($password);
         $email = $_SESSION['reset_email'];
+        $new_hashed_password = md5($password);
 
-        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
-        $stmt->bind_param("ss", $hashed_password, $email);
+        // Fetch the current password from the database
+        $stmt = $conn->prepare("SELECT password FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($current_password_hash);
+        $stmt->fetch();
+        $stmt->close();
 
-        if ($stmt->execute()) {
-            unset($_SESSION['reset_email']);
-            unset($_SESSION['reset_code']);
-            header("Location: success.php");
-            exit();
+        if ($new_hashed_password === $current_password_hash) {
+            $error = "New password cannot be the same as the current password.";
         } else {
-            $error = "Error updating password. Please try again.";
+            // Update to new password
+            $stmt = $conn->prepare("UPDATE users SET password = ? WHERE email = ?");
+            $stmt->bind_param("ss", $new_hashed_password, $email);
+
+            if ($stmt->execute()) {
+                unset($_SESSION['reset_email']);
+                unset($_SESSION['reset_code']);
+                header("Location: success.php");
+                exit();
+            } else {
+                $error = "Error updating password. Please try again.";
+            }
         }
     }
 }
@@ -149,20 +163,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 15px;
             font-size: 13px;
         }
-        .back-link {
-            display: inline-block;
-            margin-top: 25px;
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-        }
-        .back-link i {
-            margin-right: 6px;
-        }
-        .back-link:hover {
-            color: #1f6dbb;
-        }
     </style>
 </head>
 <body>
@@ -192,10 +192,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <i class="fas fa-unlock-alt"></i> Reset Password
             </button>
         </form>
-
-        <a href="login.php" class="back-link">
-            <i class="fas fa-arrow-left"></i> Back to Login
-        </a>
     </div>
 </div>
 

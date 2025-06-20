@@ -1,3 +1,19 @@
+<?php
+session_start();
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $entered_code = $_POST['code'];
+
+    if ($entered_code == $_SESSION['reset_code']) {
+        // Code matches, go to reset password
+        header("Location: reset_password.php");
+        exit();
+    } else {
+        $error = "Incorrect code. Please try again.";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,3 +1,33 @@
+<?php
+session_start();
+require_once 'config.php'; // for DB connection
+
+if (!isset($_SESSION['reset_email'])) {
+    // Don't allow direct access without session
+    header("Location: forgot_password.php");
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $new_password = md5($_POST['password']); // Hash new password
+    $email = $_SESSION['reset_email'];
+
+    $sql = "UPDATE users SET password = ? WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $new_password, $email);
+
+    if ($stmt->execute()) {
+        // Clear session and redirect
+        unset($_SESSION['reset_email']);
+        unset($_SESSION['reset_code']);
+        header("Location: success.php");
+        exit();
+    } else {
+        echo "Error updating password. Please try again.";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

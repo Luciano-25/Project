@@ -14,16 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        $entered_password = MD5($password);  // Match stored hash
+        $entered_password = MD5($password);
 
         if ($entered_password === $user['password']) {
-            // Set session
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_type'] = $user['user_type'];
             $_SESSION['role'] = $user['role'];
 
-            // Redirect based on role
             if ($user['role'] == 'superadmin') {
                 header("Location: Superadmin/superadmin_dashboard.php");
             } elseif ($user['user_type'] == 'admin') {
@@ -40,14 +38,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BookHaven - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Only changes for alignment and color below */
+        .extra-links {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .extra-links a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .password-container i {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <header class="top-header">
@@ -63,14 +87,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container">
         <div class="login-container">
             <h2>Login to Your Account</h2>
+
             <?php if (isset($error)): ?>
                 <div class="error-message"><?php echo $error; ?></div>
             <?php endif; ?>
+
             <form action="login.php" method="POST" class="login-form">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required>
                 </div>
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="password-container">
@@ -78,14 +105,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
                     </div>
                 </div>
+
                 <button type="submit" name="login" class="login-btn">Login</button>
             </form>
 
-            <div class="register-link">
-                Don't have an account? <a href="register.php">Register here</a>
-            </div>
-            <div class="forgot-password-link">
-                <a href="forgot_password.php">Forgot your password?</a>
+            <div class="extra-links">
+                <div class="register-link">
+                    Don't have an account? <a href="register.php">Register here</a>
+                </div>
+                <div class="forgot-password-link">
+                    <a href="forgot_password.php">Forgot your password?</a>
+                </div>
             </div>
         </div>
     </div>

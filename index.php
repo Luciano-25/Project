@@ -24,6 +24,70 @@ $staff_picks = $conn->query($sql_staff);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="home.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .main-footer {
+            background-color: #2c3e50;
+            color: #ffffff;
+            padding: 40px 20px 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .footer-content.two-column {
+            justify-content: center;
+        }
+
+        .footer-section {
+            flex: 1 1 300px;
+            max-width: 500px;
+        }
+
+        .footer-section h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .footer-section p,
+        .footer-section ul,
+        .footer-section a {
+            color: #dcdcdc;
+            font-size: 14px;
+            line-height: 1.6;
+            text-decoration: none;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 13px;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
 <?php include 'header.php'; ?>
@@ -70,7 +134,7 @@ $staff_picks = $conn->query($sql_staff);
 
 <!-- Footer -->
 <footer class="main-footer">
-    <div class="footer-content">
+    <div class="footer-content two-column">
         <div class="footer-section">
             <h3>About BookHaven</h3>
             <p>Your premier destination for books of all genres. We're passionate about connecting readers with their next favorite book.</p>
@@ -84,16 +148,6 @@ $staff_picks = $conn->query($sql_staff);
                 <li><a href="returns.php">Returns Policy</a></li>
                 <li><a href="faq.php">FAQ</a></li>
             </ul>
-        </div>
-
-        <div class="footer-section">
-            <h3>Connect With Us</h3>
-            <div class="social-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-pinterest"></i></a>
-            </div>
         </div>
     </div>
     <div class="footer-bottom">

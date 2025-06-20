@@ -1,4 +1,9 @@
 <?php
+// Prevent browser from caching this page
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
 session_start();
 require_once 'config.php';
 
@@ -163,6 +168,13 @@ function scroll(elementId, amount) {
         behavior: 'smooth'
     });
 }
+
+// Fix browser back button loading old cached page
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        location.reload();
+    }
+});
 </script>
 
 </body>

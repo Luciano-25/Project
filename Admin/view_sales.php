@@ -188,6 +188,9 @@ $total_revenue = $revenue_row['total_revenue'] ?? 0.00;
     <div class="print-area">
         <h3>💰 Total Revenue</h3>
         <p><strong>RM <?= number_format($total_revenue, 2); ?></strong></p>
+    
+
+        <button class="btn print-btn" onclick="window.print()">🖨️ Print Report</button>
 
         <h3>🧾 Sales Transactions</h3>
         <table>

@@ -1,7 +1,44 @@
 <?php
 session_start();
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/SMTP.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Handle resend code
+if (isset($_POST['resend'])) {
+    $code = rand(100000, 999999);
+    $_SESSION['reset_code'] = $code;
+
+    $email = $_SESSION['reset_email'];
+
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'bookhaven.my@gmail.com';
+        $mail->Password = 'eorbzczqttuckmek';
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        $mail->setFrom('bookhaven.my@gmail.com', 'BookHaven');
+        $mail->addAddress($email);
+        $mail->Subject = 'BookHaven - New Password Reset Code';
+        $mail->Body = "Your new password reset code is: $code";
+
+        $mail->send();
+        $message = "A new code has been sent to your email.";
+    } catch (Exception $e) {
+        $error = "Resend failed: " . $mail->ErrorInfo;
+    }
+}
+
+// Handle code verification
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
     $entered_code = $_POST['code'];
 
     if ($entered_code == $_SESSION['reset_code']) {
@@ -78,6 +115,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
             background-color: #fff;
         }
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
         .edit-profile-btn {
             background-color: #3498db;
             color: white;
@@ -96,13 +137,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .edit-profile-btn:hover {
             background-color: #2980b9;
         }
-        .error {
+        .resend-btn {
+            background-color: #95a5a6;
+        }
+        .resend-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .error, .message {
             background-color: #fcebea;
             color: #cc1f1a;
             padding: 12px 15px;
             border-radius: 6px;
             margin-bottom: 20px;
             font-size: 14px;
+        }
+        .message {
+            background-color: #eafaf1;
+            color: #2e7d32;
         }
     </style>
 </head>
@@ -118,19 +169,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
+        <?php if (isset($message)) echo "<div class='message'>$message</div>"; ?>
 
         <form method="POST" class="edit-form">
             <label for="code">Reset Code</label>
             <input type="text" name="code" id="code" required maxlength="6">
 
-            <button type="submit" class="edit-profile-btn">
-                <i class="fas fa-check-circle"></i> Verify Code
-            </button>
+            <div class="btn-row">
+                <button type="submit" name="verify" class="edit-profile-btn">
+                    <i class="fas fa-check-circle"></i> Verify Code
+                </button>
+
+                <button type="submit" name="resend" class="edit-profile-btn resend-btn" id="resendBtn" style="display: none;">
+                    <i class="fas fa-sync-alt"></i> Resend Code
+                </button>
+            </div>
         </form>
     </div>
 </div>
 
 <?php include 'footer.php'; ?>
+
+<script>
+// Show the resend button after 10 seconds
+setTimeout(() => {
+    document.getElementById("resendBtn").style.display = "inline-flex";
+}, 10000);
+</script>
 
 </body>
 </html>

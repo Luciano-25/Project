@@ -7,7 +7,7 @@ require 'PHPMailer/src/SMTP.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Handle resend code
+// Handle resend code logic
 if (isset($_POST['resend'])) {
     $code = rand(100000, 999999);
     $_SESSION['reset_code'] = $code;
@@ -37,7 +37,7 @@ if (isset($_POST['resend'])) {
     }
 }
 
-// Handle code verification
+// Handle code verification logic
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
     $entered_code = $_POST['code'];
 
@@ -118,6 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         .btn-row {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
         .edit-profile-btn {
             background-color: #3498db;
@@ -140,7 +141,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         .resend-btn {
             background-color: #95a5a6;
         }
-        .resend-btn:hover {
+        .resend-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .resend-btn:hover:enabled {
             background-color: #7f8c8d;
         }
         .error, .message {
@@ -154,6 +159,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         .message {
             background-color: #eafaf1;
             color: #2e7d32;
+        }
+        #countdown {
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
@@ -171,18 +180,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
         <?php if (isset($message)) echo "<div class='message'>$message</div>"; ?>
 
+        <!-- Main form for verifying code -->
         <form method="POST" class="edit-form">
             <label for="code">Reset Code</label>
-            <input type="text" name="code" id="code" required maxlength="6">
+            <input type="text" name="code" id="code" maxlength="6">
 
             <div class="btn-row">
                 <button type="submit" name="verify" class="edit-profile-btn">
                     <i class="fas fa-check-circle"></i> Verify Code
                 </button>
+            </div>
+        </form>
 
-                <button type="submit" name="resend" class="edit-profile-btn resend-btn" id="resendBtn" style="display: none;">
+        <!-- Resend button (outside of the first form to avoid validation) -->
+        <form method="POST" onsubmit="return true;">
+            <div class="btn-row" style="margin-top: 20px;">
+                <button type="submit" name="resend" class="edit-profile-btn resend-btn" id="resendBtn" disabled>
                     <i class="fas fa-sync-alt"></i> Resend Code
                 </button>
+                <span id="countdown">Available in 10s</span>
             </div>
         </form>
     </div>
@@ -191,10 +207,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
 <?php include 'footer.php'; ?>
 
 <script>
-// Show the resend button after 10 seconds
-setTimeout(() => {
-    document.getElementById("resendBtn").style.display = "inline-flex";
-}, 10000);
+    let timer = 10;
+    const resendBtn = document.getElementById("resendBtn");
+    const countdown = document.getElementById("countdown");
+
+    const interval = setInterval(() => {
+        timer--;
+        countdown.textContent = "Available in " + timer + "s";
+        if (timer <= 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            countdown.textContent = ""; // clear countdown text
+        }
+    }, 1000);
 </script>
 
 </body>

@@ -112,7 +112,6 @@ $orders = $stmt->get_result();
             margin-bottom: 15px;
             border-radius: 5px;
         }
-        /* Invoice Popup */
         .invoice-popup {
             display: none;
             position: fixed;
@@ -262,7 +261,11 @@ $orders = $stmt->get_result();
         document.body.innerHTML = originalContents;
         location.reload(); // refresh after print
     }
+
+    // Force reload when using browser back button
+    if (performance.navigation.type === 2) {
+        location.reload(true);
+    }
 </script>
 </body>
 </html>
-

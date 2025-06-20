@@ -262,10 +262,12 @@ $orders = $stmt->get_result();
         location.reload(); // refresh after print
     }
 
-    // Force reload when using browser back button
-    if (performance.navigation.type === 2) {
-        location.reload(true);
-    }
+    // ✅ Fix: Force reload if user navigates with back button
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
+            location.reload();
+        }
+    });
 </script>
 </body>
 </html>

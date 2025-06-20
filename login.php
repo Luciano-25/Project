@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Redirect based on role
             if ($user['role'] == 'superadmin') {
-                header("Location: Superadmin/superadmin_dashboard.php"); // ✅ FIXED PATH
+                header("Location: Superadmin/superadmin_dashboard.php");
             } elseif ($user['user_type'] == 'admin') {
                 header("Location: Admin/admin_dashboard.php");
             } else {
@@ -80,8 +80,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <button type="submit" name="login" class="login-btn">Login</button>
             </form>
+
             <div class="register-link">
                 Don't have an account? <a href="register.php">Register here</a>
+            </div>
+            <div class="forgot-password-link">
+                <a href="forgot_password.php">Forgot your password?</a>
             </div>
         </div>
     </div>

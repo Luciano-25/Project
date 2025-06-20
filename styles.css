@@ -1419,3 +1419,8 @@ a.stat-link:hover .stat-card {
     text-decoration: underline;
 }
 
+.error {
+    color: red;
+    font-weight: bold;
+}
+

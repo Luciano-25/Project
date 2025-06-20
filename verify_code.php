@@ -1,43 +1,11 @@
 <?php
 session_start();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/SMTP.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Handle resend code logic
-if (isset($_POST['resend'])) {
-    $code = rand(100000, 999999);
-    $_SESSION['reset_code'] = $code;
-
-    $email = $_SESSION['reset_email'];
-
-    $mail = new PHPMailer(true);
-
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'bookhaven.my@gmail.com';
-        $mail->Password = 'eorbzczqttuckmek';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
-
-        $mail->setFrom('bookhaven.my@gmail.com', 'BookHaven');
-        $mail->addAddress($email);
-        $mail->Subject = 'BookHaven - New Password Reset Code';
-        $mail->Body = "Your new password reset code is: $code";
-
-        $mail->send();
-        $message = "A new code has been sent to your email.";
-    } catch (Exception $e) {
-        $error = "Resend failed: " . $mail->ErrorInfo;
-    }
-}
-
-// Handle code verification logic
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
     $entered_code = $_POST['code'];
 
@@ -46,6 +14,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         exit();
     } else {
         $error = "Incorrect code. Please try again.";
+    }
+}
+
+// Handle Resend Code
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['resend'])) {
+    $email = $_SESSION['reset_email'] ?? '';
+
+    if ($email) {
+        $code = rand(100000, 999999);
+        $_SESSION['reset_code'] = $code;
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'bookhaven.my@gmail.com';
+            $mail->Password = 'eorbzczqttuckmek';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('bookhaven.my@gmail.com', 'BookHaven');
+            $mail->addAddress($email);
+            $mail->Subject = 'BookHaven - New Password Reset Code';
+            $mail->Body = "Your new password reset code is: $code";
+
+            $mail->send();
+            $success = "A new code has been sent to your email.";
+        } catch (Exception $e) {
+            $error = "Email could not be sent. Mailer Error: " . $mail->ErrorInfo;
+        }
     }
 }
 ?>
@@ -115,11 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
             box-shadow: 0 0 6px rgba(52, 152, 219, 0.3);
             background-color: #fff;
         }
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
         .edit-profile-btn {
             background-color: #3498db;
             color: white;
@@ -139,16 +133,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
             background-color: #2980b9;
         }
         .resend-btn {
-            background-color: #95a5a6;
-        }
-        .resend-btn:disabled {
             background-color: #bdc3c7;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
             cursor: not-allowed;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 10px;
         }
-        .resend-btn:hover:enabled {
-            background-color: #7f8c8d;
+        .resend-btn:enabled {
+            cursor: pointer;
         }
-        .error, .message {
+        .resend-btn:enabled:hover {
+            background-color: #2980b9;
+        }
+        .error, .success {
             background-color: #fcebea;
             color: #cc1f1a;
             padding: 12px 15px;
@@ -156,13 +160,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
             margin-bottom: 20px;
             font-size: 14px;
         }
-        .message {
+        .success {
             background-color: #eafaf1;
-            color: #2e7d32;
+            color: #2d995b;
         }
         #countdown {
             font-size: 14px;
-            color: #666;
+            margin-left: 10px;
+            color: #888;
         }
     </style>
 </head>
@@ -178,28 +183,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
         </div>
 
         <?php if (isset($error)) echo "<div class='error'>$error</div>"; ?>
-        <?php if (isset($message)) echo "<div class='message'>$message</div>"; ?>
+        <?php if (isset($success)) echo "<div class='success'>$success</div>"; ?>
 
-        <!-- Main form for verifying code -->
         <form method="POST" class="edit-form">
             <label for="code">Reset Code</label>
             <input type="text" name="code" id="code" maxlength="6">
 
-            <div class="btn-row">
-                <button type="submit" name="verify" class="edit-profile-btn">
-                    <i class="fas fa-check-circle"></i> Verify Code
-                </button>
-            </div>
-        </form>
+            <button type="submit" name="verify" class="edit-profile-btn">
+                <i class="fas fa-check-circle"></i> Verify Code
+            </button>
 
-        <!-- Resend button (outside of the first form to avoid validation) -->
-        <form method="POST" onsubmit="return true;">
-            <div class="btn-row" style="margin-top: 20px;">
-                <button type="submit" name="resend" class="edit-profile-btn resend-btn" id="resendBtn" disabled>
-                    <i class="fas fa-sync-alt"></i> Resend Code
-                </button>
-                <span id="countdown">Available in 10s</span>
-            </div>
+            <button type="submit" name="resend" class="resend-btn" id="resendBtn" disabled>
+                <i class="fas fa-sync-alt"></i> Resend Code
+            </button>
+
+            <span id="countdown">Available in 10s</span>
         </form>
     </div>
 </div>
@@ -214,10 +212,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['verify'])) {
     const interval = setInterval(() => {
         timer--;
         countdown.textContent = "Available in " + timer + "s";
+
         if (timer <= 0) {
             clearInterval(interval);
             resendBtn.disabled = false;
-            countdown.textContent = ""; // clear countdown text
+            resendBtn.style.backgroundColor = "#3498db"; // Turn blue
+            countdown.textContent = "";
         }
     }, 1000);
 </script>

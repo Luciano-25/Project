@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
 // Fetch pending orders
 $sql = "SELECT o.*, u.username 
         FROM orders o 
-        JOIN users u ON o.user_id = u.id 
+        LEFT JOIN users u ON o.user_id = u.id 
         WHERE o.status != 'Order Completed' 
         ORDER BY o.created_at DESC";
 $result = $conn->query($sql);
@@ -113,7 +113,7 @@ $result = $conn->query($sql);
             <tbody>
                 <?php while ($order = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?= htmlspecialchars($order['username']) ?></td>
+                        <td><?= htmlspecialchars($order['username'] ?? 'Deleted User') ?></td>
                         <td><?= htmlspecialchars($order['book_title']) ?> ×<?= $order['quantity'] ?></td>
                         <td><?= $order['quantity'] ?></td>
                         <td><?= htmlspecialchars($order['status']) ?></td>

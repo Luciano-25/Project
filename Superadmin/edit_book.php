@@ -1,4 +1,6 @@
 <?php
+session_start(); // ✅ Required to access $_SESSION
+
 include '../config.php';
 include 'superadmin_header.php';
 include 'log_helper.php'; // ✅ Logging helper
@@ -65,8 +67,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        // ✅ Log the action
-        log_admin_action($conn, $_SESSION['user_id'], $log_message);
+        // ✅ Safely log only if session contains user_id
+        if (isset($_SESSION['user_id'])) {
+            log_admin_action($conn, $_SESSION['user_id'], $log_message);
+        }
+
         header("Location: view_books.php");
         exit();
     }

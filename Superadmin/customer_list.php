@@ -1,4 +1,6 @@
 <?php
+session_start(); 
+
 include '../config.php';
 include 'superadmin_header.php';
 include 'log_helper.php'; // ✅ Logging helper

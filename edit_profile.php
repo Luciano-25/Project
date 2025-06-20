@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Current password is incorrect.";
     } elseif (!empty($new_password) && md5($new_password) === $user['password']) {
         $error = "New password cannot be the same as the current password.";
+    } elseif (!empty($new_password) && !preg_match('/^(?=.*[A-Z])(?=.*\d).{8,}$/', $new_password)) {
+        $error = "Password must be at least 8 characters, include an uppercase letter and a number.";
     } else {
         if (!empty($new_password)) {
             $hashed_password = md5($new_password);
@@ -173,6 +175,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .password-wrapper {
             position: relative;
         }
+        #password-requirements {
+            margin-top: -15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -211,6 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="password" name="password" id="new_password">
                 <i class="fas fa-eye password-toggle" onclick="togglePassword('new_password', this)"></i>
             </div>
+            <small id="password-requirements" style="color:red;"></small>
 
             <button type="submit" class="edit-profile-btn">
                 <i class="fas fa-save"></i> Update Profile
@@ -236,6 +244,22 @@ function togglePassword(id, icon) {
         icon.classList.add("fa-eye");
     }
 }
+
+// Real-time password validation
+document.getElementById('new_password').addEventListener('input', function () {
+    const password = this.value;
+    const requirements = document.getElementById('password-requirements');
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (password.length === 0) {
+        requirements.textContent = '';
+    } else if (!regex.test(password)) {
+        requirements.textContent = 'Password must be at least 8 characters, include an uppercase letter and a number.';
+        requirements.style.color = 'red';
+    } else {
+        requirements.textContent = 'Password meets requirements.';
+        requirements.style.color = 'green';
+    }
+});
 </script>
 
 <?php include 'footer.php'; ?>

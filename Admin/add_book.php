@@ -13,15 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rating = 0; // Default rating - no manual input
 
     if (!empty($_FILES['image']['name'])) {
-        $target_dir = "../Images/";
-        $file_extension = pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION);
-        $new_filename = uniqid() . '.' . $file_extension;
-        $target_file = $target_dir . $new_filename;
+    $target_dir = "../Images/";
+    $file_extension = pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION);
+    $new_filename = uniqid() . '.' . $file_extension;
+    $target_file = $target_dir . $new_filename;
 
-        if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-            $image_url = 'Images/' . $new_filename;
-        }
+    if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
+        $image_url = 'Images/' . $new_filename;
+    } else {
+        $image_url = ''; // fallback in case upload fails
     }
+} else {
+    $image_url = ''; // fallback in case no file is uploaded
+}
+
 
     $sql = "INSERT INTO books (title, author, description, price, stock, image_url, rating, genre) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
